@@ -3,26 +3,23 @@
 #ifndef __UBLOX_MODEM_H__
 #define __UBLOX_MODEM_H__
 
-#include "../GPRSModem.h"
+#include "../CellModem.h"
 
-class UbloxModem : public GPRSModem {
+class UbloxModem : public CellModem {
 
     public:
-        UbloxModem(Uart &stream, int8_t dtrPin, int8_t resetPin);
+        UbloxModem(Uart &stream, int8_t onOffPin, int8_t statusPin ,int8_t dtrPin, int8_t ctsPin);
         ~UbloxModem();
 
-        void begin(uint32_t baudrate);
-        int on();
-        int off();
-        int reset();
-
+        void begin(unsigned long baudrate);
+        
         int attachGPRS(const char * apn, const char * user, const char * password);
         int dettachGPRS();
 
-        virtual int networkOn();
         virtual int getSignalQuality(int8_t * rssi, int8_t * ber);
 
-
+    private:
+        ATResponse _sendInitializationCommands();
 };
 
 

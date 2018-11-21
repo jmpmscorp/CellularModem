@@ -15,7 +15,7 @@ bool c_str_endsWith(const char * source, const char * str) {
     size_t strLength = strlen(str);
     size_t sourceLength = strlen(source);
 
-    return strncmp(&source[sourceLength - strLength - 1], str, strLength) == 0; 
+    return strncmp(source + sourceLength - strLength, str, strLength) == 0; 
 }
 
 void c_str_trim(char * source) {
@@ -42,7 +42,7 @@ void c_str_trim(char * source) {
     *endPtr = '\0';
 }
 
-#if defined(ARDUINO)
+#if defined(__AVR__)
 bool c_str_startWith_P(const char * source, const char * str) {
     if(source == nullptr || str == nullptr) {
         return -1;
@@ -62,6 +62,6 @@ bool c_str_endsWith_P(const char * source, const char * str) {
     size_t strLength = strlen_P(str);
     size_t sourceLength = strlen(source);
 
-    return strncmp_P(&source[sourceLength - strLength - 1], str, strLength) == 0; 
+    return strncmp_P(source + sourceLength - strLength, str, strLength) == 0; 
 }
 #endif

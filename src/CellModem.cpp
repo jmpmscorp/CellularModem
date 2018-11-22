@@ -6,7 +6,7 @@ static inline bool isTimedout(uint32_t from, uint32_t nr_ms)
     return (millis() - from) > nr_ms;
 }
 
-CellModem::CellModem(Uart &serial, int8_t onOffPin, int8_t statusPin, int8_t dtrPin, int8_t ctsPin) :
+CellModem::CellModem(Stream &serial, int8_t onOffPin, int8_t statusPin, int8_t dtrPin, int8_t ctsPin) :
     _serial(&serial),
     _onOffPin(onOffPin),
     _statusPin(statusPin),
@@ -15,9 +15,7 @@ CellModem::CellModem(Uart &serial, int8_t onOffPin, int8_t statusPin, int8_t dtr
 {
 }
 
-void CellModem::begin(uint32_t baudrate) {
-    _serial->begin(baudrate);
-
+void CellModem::begin() {
     if(_onOffPin > -1) {
         pinMode(_onOffPin, OUTPUT);
     }

@@ -5,6 +5,7 @@
 
 #if defined(CELLULAR_MODEM_UBLOX)
     #include "ublox/UbloxModem.h"
+    typedef UbloxModem CellularModem;
 #else
     #error "Cellular Modem Error. You should define MODEL"
 #endif

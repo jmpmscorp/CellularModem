@@ -37,9 +37,9 @@
 
 class CellModem {
     public:
-        CellModem(Uart &serial, int8_t onOffPin, int8_t statusPin, int8_t dtrPin, int8_t ctsPin);
+        CellModem(Stream &serial, int8_t onOffPin, int8_t statusPin, int8_t dtrPin, int8_t ctsPin);
 
-        virtual void begin(uint32_t baudrate);
+        virtual void begin();
 
         virtual bool on();
         virtual bool isOn() const;
@@ -47,11 +47,14 @@ class CellModem {
         
         virtual bool reset() { return true; }
 
+        virtual bool connect() = 0;
+
         virtual int getSignalQuality(int8_t * rssi, int8_t * ber) = 0;
         
         virtual int attachGPRS(const char * apn, const char * user, const char * password) = 0;
         virtual int dettachGPRS() = 0;
         
+        virtual bool getOperatorName(char * buffer, size_t size) = 0;
 
         bool isAlive(uint16_t timeout = 300);
         
@@ -127,7 +130,7 @@ class CellModem {
         uint16_t _responseBufferSize = CELLMODEM_DEFAULT_RESPONSE_BUFFER_SIZE;
         char * _responseBuffer;
         
-        Uart * _serial;
+        Stream * _serial;
         int8_t _dtrPin = -1;
         int8_t _ctsPin = -1;
         int8_t _onOffPin = -1;

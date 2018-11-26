@@ -1,0 +1,5 @@
+{
+    "board": "arduino:samd:mkrgsm1400",
+    "port": "COM16",
+    "sketch": "at_test.ino"
+}

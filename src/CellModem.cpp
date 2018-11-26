@@ -1,11 +1,5 @@
 #include "CellModem.h"
 
-static inline bool isTimedout(uint32_t from, uint32_t nr_ms) __attribute__((always_inline));
-static inline bool isTimedout(uint32_t from, uint32_t nr_ms)
-{
-    return (millis() - from) > nr_ms;
-}
-
 CellModem::CellModem(Stream &serial, int8_t onOffPin, int8_t statusPin, int8_t dtrPin, int8_t ctsPin) :
     _serial(&serial),
     _onOffPin(onOffPin),
@@ -15,7 +9,7 @@ CellModem::CellModem(Stream &serial, int8_t onOffPin, int8_t statusPin, int8_t d
 {
 }
 
-void CellModem::begin() {
+void CellModem::init() {
     if(_onOffPin > -1) {
         pinMode(_onOffPin, OUTPUT);
     }
@@ -44,6 +38,10 @@ void CellModem::_initResponseBuffer() {
 }
 
 bool CellModem::on() {
+
+    if(isAlive(200)) {
+        return true;
+    }
 
     if(!isOn()) {
         if(_onOffPin > -1) {
@@ -92,6 +90,10 @@ bool CellModem::isAlive(uint16_t timeout) {
     sendATCommand(F("AT"));
         
     return (readResponse(NULL, 500) == ATResponse::ResponseOK);
+}
+
+void CellModem::setMinRSSI(int8_t minRSSI) {
+    _minRSSI = minRSSI;
 }
 
 ATResponse CellModem::poll(uint32_t timeout) {

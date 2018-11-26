@@ -39,7 +39,7 @@ class CellModem {
     public:
         CellModem(Stream &serial, int8_t onOffPin, int8_t statusPin, int8_t dtrPin, int8_t ctsPin);
 
-        virtual void begin();
+        virtual void init();
 
         virtual bool on();
         virtual bool isOn() const;
@@ -47,9 +47,10 @@ class CellModem {
         
         virtual bool reset() { return true; }
 
-        virtual bool connect() = 0;
-
-        virtual int getSignalQuality(int8_t * rssi, int8_t * ber) = 0;
+        virtual bool connect(const char * pin) = 0;
+        virtual bool setSimPin(const char * pin) = 0;
+        virtual SIMStatus getSimStatus() = 0;
+        virtual bool getSignalQuality(int8_t * rssi, uint8_t * ber) = 0;
         
         virtual int attachGPRS(const char * apn, const char * user, const char * password) = 0;
         virtual int dettachGPRS() = 0;
@@ -57,7 +58,8 @@ class CellModem {
         virtual bool getOperatorName(char * buffer, size_t size) = 0;
 
         bool isAlive(uint16_t timeout = 300);
-        
+        void setMinRSSI(int8_t minSignalRSSI);
+
         ATResponse poll(const char * buffer, size_t size, uint32_t timeout);
         ATResponse poll(uint32_t timeout);       
 
@@ -135,6 +137,8 @@ class CellModem {
         int8_t _ctsPin = -1;
         int8_t _onOffPin = -1;
         int8_t _statusPin = -1;
+
+        int8_t _minRSSI = -93;
     
     private:
         void _initResponseBuffer();

@@ -13,11 +13,9 @@ void setup() {
   
   modem.connect();
   sms.setTextMode();
+  sms.setCNMI(1,1);
 }
 
 void loop() {
-  
-  Serial.println(sms.getSMSMode());
-  sms.setPDUMode();
-  delay(10000);
+    modem.poll();
 }

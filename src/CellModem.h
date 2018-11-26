@@ -61,8 +61,9 @@ class CellModem {
         void setMinRSSI(int8_t minSignalRSSI);
 
         ATResponse poll(const char * buffer, size_t size, uint32_t timeout);
-        ATResponse poll(uint32_t timeout);       
+        ATResponse poll(uint32_t timeout = 250);       
 
+        char * getResponseBuffer() const;
         void setCustomDelay(delayFnPtr delayFn);
 
         template<typename T>
@@ -114,8 +115,8 @@ class CellModem {
                 (void*)callbackParameter, (void*)callbackParameter2, outSize, timeout);
         };
 
-        bool addUrcHandler(CellModemUrcHandler * urcHandler);
-        bool removeUrcHandler(CellModemUrcHandler * urcHandler);
+        void addUrcHandler(CellModemUrcHandler * urcHandler);
+        void removeUrcHandler(CellModemUrcHandler * urcHandler);
 
 
     protected:

@@ -12,6 +12,8 @@ class CellModemSMS {
         virtual bool sendSMS(char * telNumber, const char * text) = 0;
         virtual bool readSMS() = 0;
 
+        virtual bool setCNMI(uint8_t mode, uint8_t mt);
+
         virtual int8_t getSMSMode() = 0;
         virtual bool setTextMode() = 0;
         virtual bool setPDUMode() = 0;

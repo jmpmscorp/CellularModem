@@ -96,8 +96,36 @@ void CellModem::setMinRSSI(int8_t minRSSI) {
     _minRSSI = minRSSI;
 }
 
+char * CellModem::getResponseBuffer() const {
+    return _responseBuffer;
+}
+
+void CellModem::addUrcHandler(CellModemUrcHandler * urcHandler) {
+    uint8_t i = 0;
+
+    while( i < CELLMODEM_MAX_URC_HANDLERS) {
+        if(_urcHandlers[i] == nullptr) {
+            _urcHandlers[i] = urcHandler;
+            return;
+        }
+        ++i;
+    }
+}
+
+void CellModem::removeUrcHandler(CellModemUrcHandler * urcHandler) {
+    uint8_t i = 0;
+
+    while( i < CELLMODEM_MAX_URC_HANDLERS) {
+        if(_urcHandlers[i] == urcHandler) {
+            _urcHandlers[i] = nullptr;
+            return;
+        }
+        ++i;
+    }
+}
+
 ATResponse CellModem::poll(uint32_t timeout) {
-    readResponse(NULL, 500);
+    readResponse(NULL, timeout);
 }
 
 ATResponse CellModem::readResponse(char* buffer, size_t size,

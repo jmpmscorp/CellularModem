@@ -2,7 +2,7 @@
 
 UbloxModemSMS::UbloxModemSMS(UbloxModem &modem) :
     CellModemSMS(modem) {
-
+    _modem->addUrcHandler(this);
 }
 
 bool UbloxModemSMS::sendSMS(char * telNumber, const char * text) {
@@ -24,12 +24,36 @@ int8_t UbloxModemSMS::getSMSMode() {
     return static_cast<int8_t>(mode);
 }
 
+bool UbloxModemSMS::setCNMI(uint8_t mode, uint8_t mt) {
+    _modem->sendATCommand(F("AT+CNMI="), mode, ',', mt);
+
+    if(_modem->readResponse() == ATResponse::ResponseOK) {
+        _mt = mt;
+        return true;
+    }
+
+    return false;
+}
+
 bool UbloxModemSMS::setTextMode() {
     return _setSMSMode(1);
 }
 
 bool UbloxModemSMS::setPDUMode() {
     return _setSMSMode(0);
+}
+
+ATResponse UbloxModemSMS::handleUrcs() {
+    if(_mt == 1) {
+        if(strstr(_modem->getResponseBuffer(), "+CMTI:")) {
+            Serial.println("CMTI Arrived");
+        }
+    }
+    else if (_mt == 2) {
+        if(strstr(_modem->getResponseBuffer(), "+CMT:")) {
+            Serial.println("CMT Arrived");
+        }
+    }    
 }
 
 bool UbloxModemSMS::_setSMSMode(uint8_t mode) {

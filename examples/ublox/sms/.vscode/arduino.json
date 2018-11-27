@@ -1,5 +1,5 @@
 {
     "board": "arduino:samd:mkrgsm1400",
-    "port": "COM17",
+    "port": "COM16",
     "sketch": "sms_ublox.ino"
 }

@@ -136,7 +136,7 @@ ATResponse CellModem::readResponse(char* buffer, size_t size,
     uint32_t start = millis();
 
     do {
-        int count = readLine(buffer, size, 200);
+        int count = readLine(buffer, size, 500);
 
         if ( count < 0) {
             continue;
@@ -217,9 +217,9 @@ size_t CellModem::readBytesUntil(char terminator, char* buffer, size_t length, u
     if (length < 1) {
         return 0;
     }
-    
-    size_t index = 0;
 
+    size_t index = 0;
+    
     while (index < length) {
         int c = readByte(timeout);
 
@@ -231,6 +231,7 @@ size_t CellModem::readBytesUntil(char terminator, char* buffer, size_t length, u
         *buffer++ = static_cast<char>(c);        
         index++;
     }
+
     if (index < length) {
         *buffer = '\0';
     }
@@ -267,7 +268,10 @@ size_t CellModem::readBytes(uint8_t* buffer, size_t length, uint32_t timeout) {
 // Returns the number of bytes read, not including the null terminator.
 size_t CellModem::readLine(char* buffer, size_t size, uint32_t timeout) {
     // Use size-1 to leave room for a string terminator
+
     size_t len = readBytesUntil(CELLMODEM_TERMINATOR[CELLMODEM_TERMINATOR_LENGTH - 1], buffer, size - 1, timeout);
+    
+    
     // check if the terminator is more than 1 characters, then check if the first character of it exists 
     // in the calculated position and terminate the string there
     if ((CELLMODEM_TERMINATOR_LENGTH > 1) && (buffer[len - (CELLMODEM_TERMINATOR_LENGTH - 1)] == CELLMODEM_TERMINATOR[0])) {
@@ -281,5 +285,9 @@ size_t CellModem::readLine(char* buffer, size_t size, uint32_t timeout) {
 }
 
 size_t CellModem::readLine() {
-    readLine(_responseBuffer, sizeof(_responseBuffer));
+    readLine(_responseBuffer, _responseBufferSize);
+}
+
+size_t CellModem::readLine(uint32_t timeout) {
+    readLine(_responseBuffer, _responseBufferSize, timeout);
 }

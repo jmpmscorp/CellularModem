@@ -24,7 +24,7 @@ int8_t UbloxModemSMS::getSMSMode() {
     return static_cast<int8_t>(mode);
 }
 
-bool UbloxModemSMS::setCNMI(uint8_t mode, uint8_t mt) {
+bool UbloxModemSMS::setNewSMSIndicator(uint8_t mode, uint8_t mt) {
     _modem->sendATCommand(F("AT+CNMI="), mode, ',', mt);
 
     if(_modem->readResponse() == ATResponse::ResponseOK) {
@@ -44,17 +44,29 @@ bool UbloxModemSMS::setPDUMode() {
 }
 
 ATResponse UbloxModemSMS::handleUrcs() {
-    if(_mt == 1) {
-        if(strstr(_modem->getResponseBuffer(), "+CMTI:")) {
-            Serial.println("CMTI Arrived");
+    if(_mt > 0) {
+        if(_mt == 1) {
+            char memory[3] = "";
+            int index = 0;
+            if(sscanf_P(_modem->getResponseBuffer(), PSTR("+CMTI: \"%[^\"]\",%d"), memory, &index) == 2) {
+                if(_cmtiCallback) {
+                    _cmtiCallback(memory, static_cast<int16_t>(index));
+                }
+            }
         }
+        else if (_mt == 2) {
+            char phoneNumber[21] = "";
+            if(sscanf_P(_modem->getResponseBuffer(), PSTR("+CMT: \"%[^\"]\",,\"%*[^\"]\""), phoneNumber) == 1) {
+                _modem->readLine();
+                if(_cmtCallback) {
+                    _cmtCallback(phoneNumber, _modem->getResponseBuffer());
+                }                
+            }
+        }    
     }
-    else if (_mt == 2) {
-        if(strstr(_modem->getResponseBuffer(), "+CMT:")) {
-            Serial.println("CMT Arrived");
-        }
-    }    
+    
 }
+
 
 bool UbloxModemSMS::_setSMSMode(uint8_t mode) {
     _modem->sendATCommand(F("AT+CMGF="), mode);

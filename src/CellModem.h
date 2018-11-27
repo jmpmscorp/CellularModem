@@ -36,7 +36,9 @@
 
 
 class CellModem {
+    friend class CellModemSMS;
     public:
+        
         CellModem(Stream &serial, int8_t onOffPin, int8_t statusPin, int8_t dtrPin, int8_t ctsPin);
 
         virtual void init();
@@ -116,17 +118,17 @@ class CellModem {
         };
 
         void addUrcHandler(CellModemUrcHandler * urcHandler);
-        void removeUrcHandler(CellModemUrcHandler * urcHandler);
-
-
+        void removeUrcHandler(CellModemUrcHandler * urcHandler);    
+        
+        size_t readLine();
+        size_t readLine(uint32_t);
+        size_t readLine(char * buffer, size_t length, uint32_t timeout = 1000);
+        
     protected:
         int readByte(uint32_t timeout = 1000) const;
         size_t readBytes(uint8_t * buffer, size_t length, uint32_t timeout = 1000);
         size_t readBytesUntil(char terminator, char * buffer, size_t length, uint32_t timeout = 1000);
-        size_t readLine();
-        size_t readLine(char * buffer, size_t length, uint32_t timeout = 1000);
         
-
         delayFnPtr _modemDelay = delay;
         unsigned long _lastResponseOrURCMillis;
         

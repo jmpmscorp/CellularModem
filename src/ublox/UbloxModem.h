@@ -5,10 +5,6 @@
 
 #include "../CellModem.h"
 
-#ifndef __AVR__
-    #define sscanf_P sscanf
-#endif
-
 class UbloxModem : public CellModem {    
     public:        
         UbloxModem(Stream &stream, int8_t onOffPin, int8_t statusPin ,int8_t dtrPin, int8_t ctsPin);

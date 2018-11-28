@@ -169,11 +169,14 @@ ATResponse CellModem::readResponse(char* buffer, size_t size,
 
         if(parserCallback) {
             ATResponse callbackResponse = parserCallback(response, buffer, count, callbackParam1, callbackParam2);
-            if(callbackResponse != ATResponse::ResponseEmpty) {
+            if(callbackResponse != ATResponse::ResponseEmpty && callbackResponse != ATResponse::ResponseContinuosParser ) {
                 return callbackResponse;
             }
 
-            parserCallback = nullptr;
+            if(callbackResponse != ATResponse::ResponseContinuosParser) {
+                parserCallback = nullptr;
+            }
+            
         }
 
         if(response != ATResponse::ResponseNotFound) {

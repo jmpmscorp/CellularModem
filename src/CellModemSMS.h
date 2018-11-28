@@ -9,29 +9,34 @@ typedef void ( * CMTICallback ) ( char * memoryBuffer, uint16_t index );
 typedef void ( * CMTCallback ) ( char * phoneNumber, char * text);
 
 class CellModemSMS {
-    friend class CellModem;
     public:
-        CellModemSMS(CellModem &modem) : _modem(&modem) {}
+        CellModemSMS(CellModem &modem);
 
-        virtual bool sendSMS(char * phoneNumber, const char * text) = 0;
-        virtual bool readSMS() = 0;
+        virtual bool send(char * phoneNumber, const char * text);
+        virtual bool read(uint16_t index, char * phoneNumber, char * textBuffer);
+        virtual int readList(const char * filter, unsigned int * indexList, size_t size, unsigned int * remainingSize);
+        virtual bool remove(unsigned int index);
 
-        virtual bool setNewSMSIndicator(uint8_t mode, uint8_t mt) = 0;
-        void setCMTCallback(CMTCallback cmtCallback) { _cmtCallback = cmtCallback; }
-        void setCMTICallback(CMTICallback cmtiCallback) { _cmtiCallback = cmtiCallback; }
-        void setCMTIRemotePhoneNumberBuffer(char * phoneNumberBuffer) { _cmtRemotePhoneNumber = phoneNumberBuffer; }
-        virtual int8_t getSMSMode() = 0;
-        virtual bool setTextMode() = 0;
-        virtual bool setPDUMode() = 0;
+        virtual bool setNewSMSIndicator(uint8_t mode, uint8_t mt);
+        void setCMTCallback(CMTCallback cmtCallback);
+        void setCMTICallback(CMTICallback cmtiCallback);
+        virtual int8_t getMode();
+        virtual bool setTextMode();
+        virtual bool setPDUMode();
 
     protected:
+        virtual bool _setMode(uint8_t mode);
+        ATResponse _handleUrcs();
         CellModem * _modem;
 
         CMTCallback _cmtCallback = nullptr;
         CMTICallback _cmtiCallback = nullptr;
 
-        bool _cmtReceived = false;
-        char * _cmtRemotePhoneNumber;
+        static ATResponse _cmgfParser(ATResponse &response, const char * buffer, size_t size, uint8_t * mode, uint8_t * dummy);
+        static ATResponse _cmgrParser(ATResponse &response, const char * buffer, size_t size, char * phoneNumber, char * textBuffer);
+        static ATResponse _cmglParser(ATResponse &response, const char * buffer, size_t size, unsigned int * indexList, int * remainingSize);
+    
+        uint8_t _mt = 0;
 };
 
 #endif // __CELLMODEM_SMS__

@@ -9,7 +9,8 @@ enum class ATResponse : uint8_t {
     ResponseError,
     ResponsePrompt,
     ResponseTimeout,
-    ResponseEmpty
+    ResponseEmpty,
+    ResponseContinuosParser
 };
 
 enum class SIMStatus : uint8_t {
@@ -24,6 +25,10 @@ enum class NetworkTechnology : uint8_t {
     GSM_COMPACT,
     UTRAN
 };
+
+#ifndef __AVR__
+    #define sscanf_P sscanf
+#endif
 
 #define STR_HELPER(x) #x
 #define STR(x) STR_HELPER(x)

@@ -15,7 +15,7 @@ class CellModemSMS {
         virtual bool send(char * phoneNumber, const char * text);
         virtual bool read(uint16_t index, char * phoneNumber, char * textBuffer);
         virtual int readList(const char * filter, unsigned int * indexList, size_t size, unsigned int * remainingSize);
-        virtual bool remove(unsigned int index);
+        virtual bool remove(unsigned int index, uint8_t flag = 0);
 
         virtual bool setNewSMSIndicator(uint8_t mode, uint8_t mt);
         void setCMTCallback(CMTCallback cmtCallback);

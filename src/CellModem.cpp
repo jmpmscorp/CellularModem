@@ -186,8 +186,6 @@ bool CellModem::_enableAutoregistrationNetwork(uint32_t timeout) {
     }
 
     return false;
-
-    return false;
 }
 
 bool CellModem::getOperatorName(char * buffer, size_t size) {
@@ -412,7 +410,42 @@ ATResponse CellModem::_cpinParser(ATResponse& response, const char * buffer, siz
 }
 
 
+bool CellModem::getDatetime(char * buffer, size_t size) {
+    sendATCommand(F("AT+CCLK?"));
 
+    size_t auxSize = size;
+    if(readResponse<char, size_t>(_cclkParser, buffer, &auxSize) == ATResponse::ResponseOK) {
+        return true;
+    }
+
+    return false;
+}
+
+/**
+ * Reponse is +CCLK: "yy/MM/dd,hh:mm:ss+TZ"
+ * Maximum buffer size needed is 21 = 20 + '\0'
+ * */
+ATResponse CellModem::_cclkParser(ATResponse &response, const char * buffer, size_t size, char * cclkBuffer, size_t * cclkBufferSize) {    
+    if(!cclkBuffer) {
+        return ATResponse::ResponseError;
+    }
+    
+    if(strncmp_P(buffer, PSTR("+CCLK:"), 6) == 0) {
+        char * ptr = strchr(buffer, '"');
+        ++ptr;
+        strncpy(cclkBuffer, ptr, *cclkBufferSize >= 20 ? 20 : *cclkBufferSize);
+        if(*cclkBufferSize >= 21) {
+            cclkBuffer[20] = '\0';
+        }
+        else {
+            cclkBuffer[*cclkBufferSize - 1] = '\0'; 
+        }
+
+        return ATResponse::ResponseEmpty;
+    }
+
+    return ATResponse::ResponseError;
+}
 
 void CellModem::setMinRSSI(int8_t minRSSI) {
     _minRSSI = minRSSI;

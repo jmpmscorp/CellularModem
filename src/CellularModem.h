@@ -3,6 +3,8 @@
 #ifndef __CELLULAR_MODEM_H__
 #define __CELLULAR_MODEM_H__
 
+#include "CellModemDatetime.h"
+
 #if defined(CELLMODEM_UBLOX)
     #include "ublox/UbloxModem.h"
     #include "ublox/UbloxModemSMS.h"

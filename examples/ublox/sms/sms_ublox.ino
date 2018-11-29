@@ -67,6 +67,8 @@ void setup() {
       debugSerial.println(indexList[i]);
     }
   }
+
+  sms.remove(0,4);
 }
 
 void loop() {

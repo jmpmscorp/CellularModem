@@ -80,17 +80,23 @@ int CellModemSMS::readList(const char * filter, unsigned int * indexList, size_t
     return -1;
 }
 
+/**
+ * Parser to CMGL command.
+ * Indexes returned from +CMGL response are stored in the indexList buffer
+ * If there are more SMSs stored than the indexList size, indexes are not stored
+ * but they are advices in remainingSize, where it indicates the non-stored number of indexes.
+ * 
+ * indexes are stored in reverse direction, so they should be reversed to read as normal.
+ * This reversion is done in readList function
+ * */
 ATResponse CellModemSMS::_cmglParser(ATResponse &response, const char * buffer, size_t size, unsigned int * indexList, int * indexListSize) {
     unsigned int index;
 
     if(sscanf_P(buffer, PSTR("+CMGL: %u,"), &index) == 1) {
         if(*indexListSize > 0) {
             indexList[*indexListSize - 1] = index;
-            //++indexList;
         }
         --(*indexListSize);
-        
-        //return ATResponse::ResponseEmpty;
     }
 
     return ATResponse::ResponseContinuosParser;
@@ -98,8 +104,17 @@ ATResponse CellModemSMS::_cmglParser(ATResponse &response, const char * buffer, 
 }
 
 
-bool CellModemSMS::remove(unsigned int index) {
-    _modem->sendATCommand(F("AT+CMGD="), index);
+bool CellModemSMS::remove(unsigned int index, uint8_t flag) {
+    if( flag < 0 || flag > 4) {
+        return false;
+    }
+
+    if( flag == 0) {
+        _modem->sendATCommand(F("AT+CMGD="), index);
+    }
+    else {
+        _modem->sendATCommand(F("AT+CMGD="), index, ",", flag);
+    }
 
     return _modem->readResponse() == ATResponse::ResponseOK;
 }

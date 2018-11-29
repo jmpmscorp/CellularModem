@@ -60,6 +60,10 @@ class CellModem {
         virtual bool getOperatorName(char * buffer, size_t size);
         virtual bool getSignalQuality(int8_t * rssi, uint8_t * ber);        
 
+        virtual bool getDatetime(char * buffer, size_t size);
+        virtual bool enableDatetimeNetworkSync() = 0;
+        virtual bool disableDatetimeNetworkSync() = 0;
+
         bool isAlive(uint16_t timeout = 300);
         void setMinRSSI(int8_t minSignalRSSI);
 
@@ -132,7 +136,7 @@ class CellModem {
         size_t readBytes(uint8_t * buffer, size_t length, uint32_t timeout = 1000);
         size_t readBytesUntil(char terminator, char * buffer, size_t length, uint32_t timeout = 1000);
         
-        
+        virtual bool _enableAutoregistrationNetwork(uint32_t timeout = 4*60*1000);   // 4 minutes
 
         delayFnPtr _modemDelay = delay;
         unsigned long _lastResponseOrURCMillis;
@@ -152,8 +156,7 @@ class CellModem {
         void _initResponseBuffer();
 
         virtual bool _sendInitializationCommands();
-        virtual int8_t _getAutoregistrationNetworkMode();
-        virtual bool _enableAutoregistrationNetwork(uint32_t timeout = 4*60*1000);   // 4 minutes
+        virtual int8_t _getAutoregistrationNetworkMode();        
         virtual bool _waitForSignalQuality(uint32_t timeout = 60 * 1000);  // 60 seconds
         
 
@@ -168,6 +171,7 @@ class CellModem {
         static ATResponse _cpinParser(ATResponse& response, const char * buffer, size_t size, SIMStatus * simStatusResult, uint8_t * dummy);
         static ATResponse _csqParser(ATResponse& response, const char* buffer, size_t size, int * rssi, int * ber);
         static ATResponse _cregParser(ATResponse &response, const char* buffer, size_t size, unsigned int * networkRegistrationStatus, uint8_t * dummy);
+        static ATResponse _cclkParser(ATResponse &response, const char * buffer, size_t size, char * cclkBuffer, size_t * cclkBufferSize);
 };
 
 #endif // __CELL_MODEM_H__

@@ -22,7 +22,8 @@ void setup() {
   
   //modem.on();*/
   
-  Serial.println(modem.connect());
+  Serial.println(modem.networkOn());
+  modem.enableDatetimeNetworkSync();
   
 }
 
@@ -30,11 +31,12 @@ void loop() {
   // put your main code here, to run repeatedly:
   //modem.isAlive(1000);º
 
-  int8_t rssi; uint8_t ber;
-  modem.getSignalQuality(&rssi, &ber);
-  Serial.println(rssi);
-  Serial.println(ber);
+  char time[22];
 
-  delay(15000);
+  modem.getDatetime(time, sizeof(time));
+
+  Serial.println(time);
+
+  delay(10000);
   // Serial.println("Retry");
 }

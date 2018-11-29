@@ -69,6 +69,8 @@ void setup() {
   }
 
   sms.remove(0,4);
+
+  sms.send("+34650395489", "Hola");
 }
 
 void loop() {

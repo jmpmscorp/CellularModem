@@ -455,6 +455,17 @@ char * CellModem::getResponseBuffer() const {
     return _responseBuffer;
 }
 
+
+void CellModem::setCustomDelay(delayFnPtr delayFn) {
+    if(delayFn) {
+        _modemDelay = delayFn;
+    }
+}
+        
+delayFnPtr CellModem::getCustomDelay() const {
+    return _modemDelay;
+}
+
 void CellModem::addUrcHandler(CellModemUrcHandler * urcHandler) {
     uint8_t i = 0;
 
@@ -507,19 +518,27 @@ ATResponse CellModem::readResponse(char* buffer, size_t size,
             }
         }
 
-        if(c_str_startWith_P(_responseBuffer, AT_STR)) {
+        if(c_str_startWith_P(buffer, AT_STR)) {
             continue;
         }
 
-        if(c_str_startWith_P(_responseBuffer, OK_RESPONSE)) {
+        if(c_str_startWith_P(buffer, OK_RESPONSE)) {
             return ATResponse::ResponseOK;
         }
 
-        if(c_str_startWith_P(_responseBuffer, ERROR_RESPONSE) ||
+        if(c_str_startWith_P(buffer, ERROR_RESPONSE) ||
             c_str_startWith_P(_responseBuffer, CME_ERROR_RESPONSE) ||
             c_str_startWith_P(_responseBuffer, CME_ERROR_RESPONSE))
         {
             return ATResponse::ResponseError;
+        }
+
+        if(c_str_startWith_P(buffer, SOCKET_PROMPT_RESPONSE) ||
+            c_str_startWith_P(buffer, SMS_PROMPT_RESPONSE) ||
+            c_str_startWith_P(buffer, FILE_PROMPT_RESPONSE)
+        ) 
+        {
+            return ATResponse::ResponsePrompt;
         }
 
         if(parserCallback) {

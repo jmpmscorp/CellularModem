@@ -15,12 +15,18 @@
     #include <avr/pgmspace.h>
     static const char AT_STR[] PROGMEM = "AT";
     static const char OK_RESPONSE[] PROGMEM = "OK";
+    static const char SOCKET_PROMPT_RESPONSE[] PROGMEM = "@";
+    static const char FILE_PROMPT_RESPONSE[] PROGMEM = ">";
+    static const char SMS_PROMPT_RESPONSE[] PROGMEM = ">";
     static const char ERROR_RESPONSE[] PROGMEM ="ERROR";
     static const char CME_ERROR_RESPONSE[] PROGMEM = "+CME ERROR:";
     static const char CMS_ERROR_RESPONSE[] PROGMEM = "+CMS ERROR:";
 #else
     static const char AT_STR[] = "AT";
     static const char OK_RESPONSE[] = "OK";
+    static const char SOCKET_PROMPT_RESPONSE[] = "@";
+    static const char FILE_PROMPT_RESPONSE[] = ">";
+    static const char SMS_PROMPT_RESPONSE[] = ">";
     static const char ERROR_RESPONSE[] ="ERROR";
     static const char CME_ERROR_RESPONSE[] = "+CME ERROR:";
     static const char CMS_ERROR_RESPONSE[] = "+CMS ERROR:";
@@ -75,6 +81,7 @@ class CellModem {
 
         char * getResponseBuffer() const;
         void setCustomDelay(delayFnPtr delayFn);
+        delayFnPtr getCustomDelay() const;
 
         template<typename T>
         void sendData(T arg) {

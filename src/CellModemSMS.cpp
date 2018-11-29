@@ -1,13 +1,36 @@
 #include "CellModemSMS.h"
 
+#define CTRL_Z '\x1A'
+
 CellModemSMS::CellModemSMS(CellModem &modem) :
     _modem(&modem) 
 {
     
 }
 
-bool CellModemSMS::send(char * telNumber, const char * text) {
+bool CellModemSMS::send(char * phoneNumber, const char * text) {
+    _modem->sendATCommand(F("AT+CMGS=\""), phoneNumber, F("\""));
 
+    if(_modem->readResponse() == ATResponse::ResponsePrompt) {
+        _modem->sendData(text, CTRL_Z);
+
+        ATResponse response;
+        uint32_t start = millis();
+
+        do{
+            response = _modem->readResponse();
+            _modem->getCustomDelay()(10);
+        }while(response == ATResponse::ResponseTimeout && !isTimedout(start, 60 * 1000));
+
+        if(response == ATResponse::ResponseOK) {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+
+    return false;
 }
 
 bool CellModemSMS::read(uint16_t index, char * phoneNumber, char * textBuffer) {

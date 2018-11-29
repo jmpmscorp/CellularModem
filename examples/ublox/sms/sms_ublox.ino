@@ -40,11 +40,18 @@ void setup() {
  
   debugSerial.begin(115200);
   modemSerial.begin(115200);
+
+  unsigned int now = millis();
+
+  while(!Serial && millis() - now < 5000) {
+    delay(10);
+  }
+
   modem.init();
   
   sms.setCMTCallback(onCMT);
   sms.setCMTICallback(onCMTI);
-  modem.connect();
+  modem.networkOn();
   sms.setTextMode();
   sms.setNewSMSIndicator(1,2);
 
@@ -66,12 +73,12 @@ void loop() {
     modem.poll();
 
     
-    if (sms.read(12, phoneNumber, textBuffer)) {
+    /*if (sms.read(12, phoneNumber, textBuffer)) {
       debugSerial.println(phoneNumber);
       debugSerial.println(textBuffer);
 
       if(sms.remove(12)) {
         debugSerial.println("Success Remove");
       }
-    }
+    }*/
 }

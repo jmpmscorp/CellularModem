@@ -13,6 +13,15 @@ enum class ATResponse : uint8_t {
     ResponseContinuosParser
 };
 
+enum class NetworkRegistrationStatus : uint8_t {
+    NotRegistered,
+    Registered,
+    Searching,
+    Denied,
+    Unknown,
+    Roaming
+};
+
 enum class SIMStatus : uint8_t {
     Unknown,
     Missing,

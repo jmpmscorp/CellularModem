@@ -37,6 +37,7 @@ void CellModem::_initResponseBuffer() {
     }
 }
 
+
 bool CellModem::on() {
 
     if(isAlive(200)) {
@@ -59,7 +60,7 @@ bool CellModem::on() {
     }
     
     bool timeout = true;
-    Serial.println("On");
+    
     for (uint8_t i = 0; i < 10; i++) {
         if (isAlive(500)) {
             timeout = false;
@@ -71,8 +72,7 @@ bool CellModem::on() {
         return false;
     }
 
-    return isOn();
-
+    
 }
 
 bool CellModem::isOn() const {
@@ -84,6 +84,10 @@ bool CellModem::isOn() const {
     }
 }
 
+
+/*******************************************************************
+ * **************   NETWORK FUNCTIONS ******************************
+ * *****************************************************************/
 bool CellModem::isAlive(uint16_t timeout) {
     unsigned long start = millis();
     
@@ -91,6 +95,324 @@ bool CellModem::isAlive(uint16_t timeout) {
         
     return (readResponse(NULL, 500) == ATResponse::ResponseOK);
 }
+
+bool CellModem::_sendInitializationCommands() {
+    sendATCommand(F("AT+CMEE=2"));
+
+    if(readResponse() != ATResponse::ResponseOK) {
+        return false;
+    }
+
+    return true;
+}
+
+bool CellModem::networkOn(bool enableAutoregistration) {
+    return networkOn(nullptr, enableAutoregistration);
+}
+
+bool CellModem::networkOn(const char * pin, bool enableAutoregistration) {
+    if(!isOn()) {
+        on();
+    } 
+
+    _sendInitializationCommands();
+
+    switch (getSIMStatus()) {
+        case SIMStatus::Ready: {
+            break;
+        }
+        case SIMStatus::NeedsPin: {
+            if(!setSIMPin(pin)) {
+                return false;
+            }
+            if(getSIMStatus() != SIMStatus::Ready) {
+                return false;
+            }
+        }
+        case SIMStatus::Missing:
+        case SIMStatus::Unknown:
+        default:
+            return false;
+    }
+
+    if(enableAutoregistration) {
+        if( !_enableAutoregistrationNetwork()) {
+            return false;
+        }
+    }
+    
+
+    if(!_waitForSignalQuality()) {
+        return false;
+    }
+
+    if(!isNetworkRegistered()) {
+        return false;
+    }
+
+    return true;   
+}
+
+int8_t CellModem::_getAutoregistrationNetworkMode() {
+    sendATCommand(F("AT+COPS?"));
+
+    unsigned int mode;
+    if(readResponse<unsigned int, unsigned int>(_copsParser, &mode, NULL) != ATResponse::ResponseOK) {
+        return -1;
+    }
+    
+    return static_cast<int8_t>(mode);
+}
+
+bool CellModem::_enableAutoregistrationNetwork(uint32_t timeout) {
+    if(_getAutoregistrationNetworkMode() == 0) {
+        return true;
+    }
+
+    uint32_t start = millis();
+    while(!isTimedout(start, timeout)) {
+        sendATCommand(F("AT+COPS=0"));
+
+        if(readResponse(NULL, 1000) == ATResponse::ResponseOK) {
+            _modemDelay(1000);
+            
+            char nameBuffer[30];
+            if(getOperatorName(nameBuffer, sizeof(nameBuffer))) {
+                return true;
+            }
+        }
+
+        _modemDelay(1000);
+    }
+
+    return false;
+
+    return false;
+}
+
+bool CellModem::getOperatorName(char * buffer, size_t size) {
+    if(buffer == nullptr) {
+        return false;
+    }
+
+    if(size > 0) {
+        *buffer ='\0';
+    }
+    else {
+        return false;
+    }
+
+    sendATCommand(F("AT+COPS?"));
+
+    if (readResponse<char, size_t>(_copsParser, buffer, &size) != ATResponse::ResponseOK) {
+        return false;
+    }
+
+    return (buffer[0] != '\0');
+}
+
+ATResponse CellModem::_copsParser(ATResponse &response, const char* buffer, size_t size,
+        char* operatorNameBuffer, size_t* operatorNameBufferSize)
+{
+    if (!operatorNameBuffer || !operatorNameBufferSize) {
+        return ATResponse::ResponseError;
+    }
+
+    // TODO maybe limit length of string in format? needs converting int to string though
+    if (sscanf_P(buffer, PSTR("+COPS: %*d,%*d,\"%[^\"]\",%*d"), operatorNameBuffer) == 1) {
+        return ATResponse::ResponseEmpty;
+    }
+    if (sscanf_P(buffer, "+COPS: %*d,%*d,\"%[^\"]\"", operatorNameBuffer) == 1) {
+        return ATResponse::ResponseEmpty;
+    }
+    int dummy;
+    if (sscanf_P(buffer, "+COPS: %d", &dummy) == 1) {
+        return ATResponse::ResponseEmpty;
+    }
+
+    return ATResponse::ResponseError;
+}
+
+ATResponse CellModem::_copsParser(ATResponse &response, const char* buffer, size_t size,
+    unsigned int * mode, unsigned int * networkTechnology)
+{
+    if(!networkTechnology && !mode) {
+        return ATResponse::ResponseError;
+    }
+
+    if(!networkTechnology) {
+        if(sscanf_P(buffer, PSTR("+COPS: %u"), mode) == 1 || 
+            sscanf_P(buffer, PSTR("+COPS: %d,%*d,\"%*[^\"]\",%*d"), mode) == 1) 
+        {
+            return ATResponse::ResponseEmpty;
+        }
+        else {
+            return ATResponse::ResponseError;
+        }
+    }
+
+    if(sscanf_P(buffer, PSTR("+COPS: %u,%*d,\"%*[^\"]\",%u"), mode, networkTechnology) == 2) {
+        return ATResponse::ResponseEmpty;
+    }
+
+    return ATResponse::ResponseError;
+}
+
+bool CellModem::isNetworkRegistered() {
+    NetworkRegistrationStatus status = getNetworkRegistrationStatus();
+
+    if(status == NetworkRegistrationStatus::Registered || status == NetworkRegistrationStatus::Roaming) {
+        return true;
+    }
+
+    return false;
+}
+
+NetworkRegistrationStatus CellModem::getNetworkRegistrationStatus() {
+    sendATCommand(F("AT+CREG?"));
+
+    unsigned int status;
+    if(readResponse<unsigned int, uint8_t>(_cregParser, &status, NULL) == ATResponse::ResponseOK) {
+        switch (status) {
+            case 0: return NetworkRegistrationStatus::NotRegistered;
+            case 1: return NetworkRegistrationStatus::Registered;
+            case 2: return NetworkRegistrationStatus::Searching;
+            case 3: return NetworkRegistrationStatus::Denied;
+            case 5: return NetworkRegistrationStatus::Roaming;
+            case 4:
+            default:
+                return NetworkRegistrationStatus::Unknown;
+        }
+    }
+
+    return NetworkRegistrationStatus::Unknown;
+}
+
+ATResponse CellModem::_cregParser(ATResponse &response, const char* buffer, size_t size,
+    unsigned int * networkRegistrationStatus, uint8_t * dummy) 
+{
+    if(!networkRegistrationStatus) {
+        return ATResponse::ResponseError;
+    }
+
+    if(sscanf_P(buffer, PSTR("+CREG: %*u,%u"), networkRegistrationStatus) == 1) {
+        return ATResponse::ResponseEmpty;
+    }
+
+    return ATResponse::ResponseError;
+}
+
+bool CellModem::_waitForSignalQuality(uint32_t timeout) {
+    uint32_t start = millis();
+
+    int8_t rssi; uint8_t ber;
+
+    uint8_t delayCount = 1;
+    while(!isTimedout(start, timeout)) {
+        if(getSignalQuality(&rssi, &ber)) {
+            if(rssi != 0 && rssi >= _minRSSI) {
+                return true;
+            }
+        }
+
+        _modemDelay(delayCount * 1000);
+
+        if(delayCount < 5) {
+            ++delayCount;
+        }
+    }
+
+    return false;
+}
+
+bool CellModem::getSignalQuality(int8_t * rssi, uint8_t * ber) {
+    sendATCommand(F("AT+CSQ"));
+
+    int csqRaw = 0;
+    int berRaw = 0;
+
+    if (readResponse<int, int> (_csqParser, &csqRaw, &berRaw) == ATResponse::ResponseOK) {
+        *rssi = (csqRaw == 99) ? 0 : static_cast<int8_t>(-113 + 2 * csqRaw);
+        *ber = (berRaw == 99) ? 0 : static_cast<uint8_t>(berRaw);
+
+        return true;
+    }
+
+    return false;
+}
+
+
+ATResponse CellModem::_csqParser(ATResponse& response, const char* buffer, size_t size, int * rssi, int * ber) {
+    if (!rssi || !ber) {
+        return ATResponse::ResponseError;
+    }
+
+    if (sscanf_P(buffer, PSTR("+CSQ: %d,%d"), rssi, ber) == 2) {
+        return ATResponse::ResponseEmpty;
+    }
+
+    return ATResponse::ResponseError;
+}
+
+
+SIMStatus CellModem::getSIMStatus() {
+    SIMStatus simStatus;
+    uint8_t retries = 0;
+
+    do {
+        if(retries > 0) {
+            _modemDelay(250);
+        }
+
+        sendATCommand("AT+CPIN?");
+        if (readResponse<SIMStatus, uint8_t>(_cpinParser, &simStatus, NULL) == ATResponse::ResponseOK) {
+            return simStatus;
+        }
+
+        ++retries;
+    } while(retries < 5);
+    
+
+    return SIMStatus::Missing;
+}
+
+bool CellModem::setSIMPin(const char * pin) {
+    if(!pin) {
+        return false;
+    }
+
+    sendATCommand(F("AT+CPIN=\""), pin, F("\""));
+
+    if(readResponse() == ATResponse::ResponseOK) {
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
+ATResponse CellModem::_cpinParser(ATResponse& response, const char * buffer, size_t size, SIMStatus * simStatus, uint8_t * dummy) {
+    if (!simStatus) {
+        return ATResponse::ResponseError;
+    }
+
+    char status[16];
+    if (sscanf_P(buffer, "+CPIN: %" STR(sizeof(status)-1) "s", status) == 1) {
+        if (c_str_startWith("READY", status)) {
+            *simStatus = SIMStatus::Ready;
+        }
+        else {
+            *simStatus = SIMStatus::NeedsPin;
+        }
+
+        return ATResponse::ResponseEmpty;
+    }
+    
+    return ATResponse::ResponseError;
+}
+
+
+
 
 void CellModem::setMinRSSI(int8_t minRSSI) {
     _minRSSI = minRSSI;

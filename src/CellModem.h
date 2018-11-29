@@ -49,21 +49,25 @@ class CellModem {
         
         virtual bool reset() { return true; }
 
-        virtual bool connect(const char * pin) = 0;
-        virtual bool setSimPin(const char * pin) = 0;
-        virtual SIMStatus getSimStatus() = 0;
-        virtual bool getSignalQuality(int8_t * rssi, uint8_t * ber) = 0;
-        
-        virtual int attachGPRS(const char * apn, const char * user, const char * password) = 0;
-        virtual int dettachGPRS() = 0;
-        
-        virtual bool getOperatorName(char * buffer, size_t size) = 0;
+        virtual bool networkOn(bool enableAutoregistration = true);
+        virtual bool networkOn(const char * pin, bool enableAutoregistration = true);
+        virtual bool isNetworkRegistered();
+        virtual NetworkRegistrationStatus getNetworkRegistrationStatus();
+
+        virtual bool setSIMPin(const char * pin);
+        virtual SIMStatus getSIMStatus();
+
+        virtual bool getOperatorName(char * buffer, size_t size);
+        virtual bool getSignalQuality(int8_t * rssi, uint8_t * ber);        
 
         bool isAlive(uint16_t timeout = 300);
         void setMinRSSI(int8_t minSignalRSSI);
 
         ATResponse poll(const char * buffer, size_t size, uint32_t timeout);
-        ATResponse poll(uint32_t timeout = 250);       
+        ATResponse poll(uint32_t timeout = 250);   
+
+        void addUrcHandler(CellModemUrcHandler * urcHandler);
+        void removeUrcHandler(CellModemUrcHandler * urcHandler);    
 
         char * getResponseBuffer() const;
         void setCustomDelay(delayFnPtr delayFn);
@@ -117,8 +121,7 @@ class CellModem {
                 (void*)callbackParameter, (void*)callbackParameter2, outSize, timeout);
         };
 
-        void addUrcHandler(CellModemUrcHandler * urcHandler);
-        void removeUrcHandler(CellModemUrcHandler * urcHandler);    
+            
         
         size_t readLine();
         size_t readLine(uint32_t);
@@ -129,6 +132,8 @@ class CellModem {
         size_t readBytes(uint8_t * buffer, size_t length, uint32_t timeout = 1000);
         size_t readBytesUntil(char terminator, char * buffer, size_t length, uint32_t timeout = 1000);
         
+        
+
         delayFnPtr _modemDelay = delay;
         unsigned long _lastResponseOrURCMillis;
         
@@ -146,10 +151,23 @@ class CellModem {
     private:
         void _initResponseBuffer();
 
+        virtual bool _sendInitializationCommands();
+        virtual int8_t _getAutoregistrationNetworkMode();
+        virtual bool _enableAutoregistrationNetwork(uint32_t timeout = 4*60*1000);   // 4 minutes
+        virtual bool _waitForSignalQuality(uint32_t timeout = 60 * 1000);  // 60 seconds
+        
+
         bool _isResponseBufferInitialized = false;
 
         CellModemUrcHandler * _urcHandlers[CELLMODEM_MAX_URC_HANDLERS];
         bool _onOffStatus = false;
+
+
+        static ATResponse _copsParser(ATResponse &response, const char * buffer, size_t size, char * operatorNameBuffer, size_t * operatorNameBufferSize);
+        static ATResponse _copsParser(ATResponse &response, const char * buffer, size_t size, unsigned int * mode, unsigned int * networkTechnology);
+        static ATResponse _cpinParser(ATResponse& response, const char * buffer, size_t size, SIMStatus * simStatusResult, uint8_t * dummy);
+        static ATResponse _csqParser(ATResponse& response, const char* buffer, size_t size, int * rssi, int * ber);
+        static ATResponse _cregParser(ATResponse &response, const char* buffer, size_t size, unsigned int * networkRegistrationStatus, uint8_t * dummy);
 };
 
 #endif // __CELL_MODEM_H__

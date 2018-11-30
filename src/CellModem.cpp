@@ -502,7 +502,7 @@ ATResponse CellModem::readResponse(char* buffer, size_t size,
     uint32_t start = millis();
 
     do {
-        int count = readLine(buffer, size, 500);
+        int count = readLine(buffer, size, 250);
 
         if ( count < 0) {
             continue;
@@ -543,17 +543,17 @@ ATResponse CellModem::readResponse(char* buffer, size_t size,
 
         if(parserCallback) {
             ATResponse callbackResponse = parserCallback(response, buffer, count, callbackParam1, callbackParam2);
-            if(callbackResponse != ATResponse::ResponseEmpty && callbackResponse != ATResponse::ResponseContinuosParser ) {
+            if(callbackResponse != ATResponse::ResponseEmpty && callbackResponse != ATResponse::ResponseMultilineParser ) {
                 return callbackResponse;
             }
 
-            if(callbackResponse != ATResponse::ResponseContinuosParser) {
+            if(callbackResponse != ATResponse::ResponseMultilineParser) {
                 parserCallback = nullptr;
             }
             
         }
 
-        if(response != ATResponse::ResponseNotFound) {
+        if(response != ATResponse::ResponseNotFound && response != ATResponse::ResponseMultilineParser) {
             return response;
         }
 

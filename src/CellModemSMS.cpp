@@ -33,33 +33,53 @@ bool CellModemSMS::send(char * phoneNumber, const char * text) {
     return false;
 }
 
-bool CellModemSMS::read(uint16_t index, char * phoneNumber, char * textBuffer) {
+bool CellModemSMS::read(uint16_t index, char * phoneNumber, size_t phoneNumberSize,
+     char * textBuffer, size_t textBufferSize) 
+{
     _modem->sendATCommand(F("AT+CMGR="), index);
 
-    return _modem->readResponse<char, char>(_cmgrParser, phoneNumber, textBuffer) == ATResponse::ResponseOK;
+    SafeCharBufferPtr safePhoneNumber = { phoneNumber, phoneNumberSize};
+    SafeCharBufferPtr safeTextBuffer = { textBuffer, textBufferSize };
+
+    return _modem->readResponse<SafeCharBufferPtr, SafeCharBufferPtr>(_cmgrParser, &safePhoneNumber, &safeTextBuffer) == ATResponse::ResponseOK;
 }
 
-ATResponse CellModemSMS::_cmgrParser(ATResponse& response, const char* buffer, size_t size, char* phoneNumber, char* textBuffer) {
-    if(!phoneNumber || !textBuffer) {
+ATResponse CellModemSMS::_cmgrParser(ATResponse& response, const char* buffer, size_t size, SafeCharBufferPtr * safePhoneNumber, SafeCharBufferPtr * safeTextBuffer) {
+    if(!safePhoneNumber || !safeTextBuffer) {
         return ATResponse::ResponseError;
     }
 
-    if (sscanf_P(buffer, PSTR("+CMGR: \"%*[^\"]\",\"%[^\"]"), phoneNumber) == 1) {
-        return ATResponse::ResponseEmpty;
+    if (sscanf_P(buffer, PSTR("+CMGR: \"%*[^\"]\",\"%[^\"]"), safePhoneNumber->bufferPtr) == 1) {
+        response = ATResponse::ResponseMultilineParser;
+        return ATResponse::ResponseMultilineParser;
     }
-    else if ((buffer[size - 2] == '\r') && (buffer[size - 1] == '\n')) {
-        for(size_t i = 0; i = size - 2; ++i) {
-            if(buffer[i] && textBuffer[i]) {
-                textBuffer[i] = buffer[i];
-            }
-            else {
-                textBuffer[i - 1] = '\0';
-                return ATResponse::ResponseEmpty;
-            }
+    //else if ((buffer[size - 2] == '\r') && (buffer[size - 1] == '\n')) {
+    else if (response == ATResponse::ResponseMultilineParser) {
+        uint16_t len = strlen(buffer);
+
+        strncpy(safeTextBuffer->bufferPtr, buffer, 
+            len >= safeTextBuffer->size ? safeTextBuffer->size - 1 : len);
+        
+        if(strlen(buffer) >= safeTextBuffer->size) {
+            safeTextBuffer->bufferPtr[safeTextBuffer->size -1] = '\0';
+        }
+        else {
+            safeTextBuffer->bufferPtr[len - 1] = '\0';
+        }
+        /*size_t i = 0;
+        while(i < size && &textBuffer[i]) {
+            Serial.println((unsigned int)&textBuffer[i]);
+            textBuffer[i] = buffer[i];
+            ++i;
         }
 
-        textBuffer[size - 2] = '\0';
-
+        if(&textBuffer[i] != nullptr) {
+            textBuffer[i] = '\0';
+        }
+        else {
+            textBuffer[i - 1] = '\0'; 
+        }*/
+        
         return ATResponse::ResponseEmpty;
     }
 
@@ -122,7 +142,7 @@ ATResponse CellModemSMS::_cmglParser(ATResponse &response, const char * buffer, 
         --(*indexListSize);
     }
 
-    return ATResponse::ResponseContinuosParser;
+    return ATResponse::ResponseMultilineParser;
     //return ATResponse::ResponseError;
 }
 

@@ -10,7 +10,7 @@ enum class ATResponse : uint8_t {
     ResponsePrompt,
     ResponseTimeout,
     ResponseEmpty,
-    ResponseContinuosParser
+    ResponseMultilineParser
 };
 
 enum class NetworkRegistrationStatus : uint8_t {
@@ -44,6 +44,12 @@ enum class NetworkTechnology : uint8_t {
 
 typedef void( *delayFnPtr )(unsigned long milliseconds);
 typedef ATResponse ( * ResponseParserCallbackPtr ) (ATResponse &response, const char * buffer, size_t size, void * param1, void * param2);
+
+typedef struct SafeCharBufferPtr
+{
+    char * bufferPtr;
+    size_t size;
+};
 
 
 static inline bool isTimedout(uint32_t from, uint32_t nr_ms) __attribute__((always_inline));

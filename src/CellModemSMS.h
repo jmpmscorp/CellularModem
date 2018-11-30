@@ -13,7 +13,7 @@ class CellModemSMS {
         CellModemSMS(CellModem &modem);
 
         virtual bool send(char * phoneNumber, const char * text);
-        virtual bool read(uint16_t index, char * phoneNumber, char * textBuffer);
+        virtual bool read(uint16_t index, char * phoneNumber, size_t phoneNumberSize, char * textBuffer, size_t textBufferSize);
         virtual int readList(const char * filter, unsigned int * indexList, size_t size, unsigned int * remainingSize);
         virtual bool remove(unsigned int index, uint8_t flag = 0);
 
@@ -33,7 +33,7 @@ class CellModemSMS {
         CMTICallback _cmtiCallback = nullptr;
 
         static ATResponse _cmgfParser(ATResponse &response, const char * buffer, size_t size, uint8_t * mode, uint8_t * dummy);
-        static ATResponse _cmgrParser(ATResponse &response, const char * buffer, size_t size, char * phoneNumber, char * textBuffer);
+        static ATResponse _cmgrParser(ATResponse &response, const char * buffer, size_t size, SafeCharBufferPtr * phoneNumber, SafeCharBufferPtr * textBuffer);
         static ATResponse _cmglParser(ATResponse &response, const char * buffer, size_t size, unsigned int * indexList, int * remainingSize);
     
         uint8_t _mt = 0;

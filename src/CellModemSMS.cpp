@@ -64,21 +64,8 @@ ATResponse CellModemSMS::_cmgrParser(ATResponse& response, const char* buffer, s
             safeTextBuffer->bufferPtr[safeTextBuffer->size -1] = '\0';
         }
         else {
-            safeTextBuffer->bufferPtr[len - 1] = '\0';
+            safeTextBuffer->bufferPtr[len] = '\0';
         }
-        /*size_t i = 0;
-        while(i < size && &textBuffer[i]) {
-            Serial.println((unsigned int)&textBuffer[i]);
-            textBuffer[i] = buffer[i];
-            ++i;
-        }
-
-        if(&textBuffer[i] != nullptr) {
-            textBuffer[i] = '\0';
-        }
-        else {
-            textBuffer[i - 1] = '\0'; 
-        }*/
         
         return ATResponse::ResponseEmpty;
     }

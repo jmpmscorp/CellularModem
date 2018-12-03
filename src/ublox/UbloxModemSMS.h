@@ -9,7 +9,7 @@
 
 #define CELLMODEM_SMS_MAX_INDEXES_EVENTS 5
 
-class UbloxModemSMS : public CellModemSMS, public CellModemUrcHandler {
+class UbloxModemSMS : public CellModemSMS {
     public:
         UbloxModemSMS(UbloxModem & modem);
 

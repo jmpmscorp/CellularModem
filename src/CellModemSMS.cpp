@@ -5,7 +5,7 @@
 CellModemSMS::CellModemSMS(CellModem &modem) :
     _modem(&modem) 
 {
-    
+    _modem->addUrcHandler(this);
 }
 
 bool CellModemSMS::send(char * phoneNumber, const char * text) {
@@ -212,7 +212,7 @@ void CellModemSMS::setCMTICallback(CMTICallback cmtiCallback) {
     _cmtiCallback = cmtiCallback; 
 }
 
-ATResponse CellModemSMS::_handleUrcs() {
+ATResponse CellModemSMS::handleUrcs() {
     if(_mt > 0) {
         if(_mt == 1) {
             char memory[3] = "";

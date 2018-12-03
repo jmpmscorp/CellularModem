@@ -8,7 +8,7 @@
 typedef void ( * CMTICallback ) ( char * memoryBuffer, uint16_t index );
 typedef void ( * CMTCallback ) ( char * phoneNumber, char * text);
 
-class CellModemSMS {
+class CellModemSMS : public CellModemUrcHandler  {
     public:
         CellModemSMS(CellModem &modem);
 
@@ -24,9 +24,10 @@ class CellModemSMS {
         virtual bool setTextMode();
         virtual bool setPDUMode();
 
+        ATResponse handleUrcs();
+
     protected:
         virtual bool _setMode(uint8_t mode);
-        ATResponse _handleUrcs();
         CellModem * _modem;
 
         CMTCallback _cmtCallback = nullptr;

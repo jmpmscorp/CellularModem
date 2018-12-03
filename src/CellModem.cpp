@@ -70,9 +70,28 @@ bool CellModem::on() {
 
     if (timeout) {
         return false;
+    }    
+}
+
+bool CellModem::forceReset() {
+    if(_onOffPin > -1) {
+        digitalWrite(_onOffPin, HIGH);
+        _modemDelay(250);
+        digitalWrite(_onOffPin, LOW);
     }
 
+    bool timeout = true;
     
+    for (uint8_t i = 0; i < 10; i++) {
+        if (isAlive(500)) {
+            timeout = false;
+            break;
+        }
+    }
+
+    if (timeout) {
+        return false;
+    }    
 }
 
 bool CellModem::isOn() const {
@@ -82,6 +101,12 @@ bool CellModem::isOn() const {
     else {
         return _onOffStatus;
     }
+}
+
+bool CellModem::reset() {
+    sendATCommand(F("AT+CFUN=16"));
+
+    return readResponse() == ATResponse::ResponseOK;
 }
 
 
@@ -143,10 +168,6 @@ bool CellModem::networkOn(const char * pin, bool enableAutoregistration) {
     
 
     if(!_waitForSignalQuality()) {
-        return false;
-    }
-
-    if(!isNetworkRegistered()) {
         return false;
     }
 

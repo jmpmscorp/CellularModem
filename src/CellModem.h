@@ -53,7 +53,8 @@ class CellModem {
         virtual bool isOn() const;
         virtual bool off() { return true; }
         
-        virtual bool reset() { return true; }
+        virtual bool forceReset();
+        virtual bool reset();
 
         virtual bool networkOn(bool enableAutoregistration = true);
         virtual bool networkOn(const char * pin, bool enableAutoregistration = true);

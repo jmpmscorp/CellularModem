@@ -10,6 +10,7 @@ class Sim800Modem : public CellModem {
         Sim800Modem(Stream &stream, int8_t onOffPin, int8_t statusPin ,int8_t dtrPin, int8_t ctsPin);
         ~Sim800Modem();
 
+        bool on();
         bool enableDatetimeNetworkSync();
         bool disableDatetimeNetworkSync();
 

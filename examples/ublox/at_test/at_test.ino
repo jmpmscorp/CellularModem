@@ -24,7 +24,7 @@ void setup() {
   
   Serial.println(modem.networkOn());
   delay(2000);
-  //modem.enableDatetimeNetworkSync();
+  modem.enableDatetimeNetworkSync();
   
 }
 

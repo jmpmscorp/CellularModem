@@ -8,6 +8,41 @@ Sim800Modem::Sim800Modem(Stream &serial, int8_t onOffPin, int8_t statusPin, int8
 
 Sim800Modem::~Sim800Modem() {}
 
+bool Sim800Modem::on() {
+
+    if(isAlive(200)) {
+        return true;
+    }
+
+    if(!isOn()) {
+        if(_onOffPin > -1) {
+            digitalWrite(_onOffPin, LOW);
+            _modemDelay(100);
+            digitalWrite(_onOffPin, HIGH);
+        }
+
+        if(_dtrPin > -1) {
+            digitalWrite(_dtrPin, LOW);
+            _modemDelay(100);
+        }
+
+        _onOffStatus = true;
+    }
+    
+    bool timeout = true;
+    
+    for (uint8_t i = 0; i < 10; i++) {
+        if (isAlive(500)) {
+            timeout = false;
+            break;
+        }
+    }
+
+    if (timeout) {
+        return false;
+    }    
+}
+
 bool Sim800Modem::enableDatetimeNetworkSync() {
     if(_getCLTS() == 1) {
         return true;

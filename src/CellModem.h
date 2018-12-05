@@ -159,6 +159,7 @@ class CellModem {
         int8_t _statusPin = -1;
 
         int8_t _minRSSI = -93;
+        bool _onOffStatus = false;
     
     private:
         void _initResponseBuffer();
@@ -171,7 +172,7 @@ class CellModem {
         bool _isResponseBufferInitialized = false;
 
         CellModemUrcHandler * _urcHandlers[CELLMODEM_MAX_URC_HANDLERS];
-        bool _onOffStatus = false;
+        
 
 
         static ATResponse _copsParser(ATResponse &response, const char * buffer, size_t size, char * operatorNameBuffer, size_t * operatorNameBufferSize);

@@ -142,6 +142,8 @@ bool CellModem::networkOn(const char * pin, bool enableAutoregistration) {
 
     _sendInitializationCommands();
 
+    poll(10000);
+
     switch (getSIMStatus()) {
         case SIMStatus::Ready: {
             break;
@@ -416,7 +418,7 @@ ATResponse CellModem::_cpinParser(ATResponse& response, const char * buffer, siz
     }
 
     char status[16];
-    if (sscanf_P(buffer, "+CPIN: %" STR(sizeof(status)-1) "s", status) == 1) {
+    if (sscanf_P(buffer, PSTR("+CPIN: %" STR(sizeof(status)-1) "s"), status) == 1) {
         if (c_str_startWith("READY", status)) {
             *simStatus = SIMStatus::Ready;
         }

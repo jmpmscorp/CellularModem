@@ -33,9 +33,7 @@ bool UbloxModem::enableDatetimeNetworkSync() {
 }
 
 bool UbloxModem::disableDatetimeNetworkSync() {
-    if(!_setCTZU(0)) {
-        return false;
-    }
+    return _setCTZU(0);
 }
 
 bool UbloxModem::_setCTZU(uint8_t mode) {

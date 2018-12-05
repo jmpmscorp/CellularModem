@@ -1,5 +1,5 @@
 {
-    "board": "arduino:samd:mkrgsm1400",
-    "port": "COM16",
+    "board": "SODAQ:avr:sodaq_mbili",
+    "port": "COM7",
     "sketch": "at_test.ino"
 }

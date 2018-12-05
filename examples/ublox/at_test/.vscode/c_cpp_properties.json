@@ -3,11 +3,12 @@
         {
             "name": "Win32",
             "includePath": [
+                "C:\\Users\\DOLE JM\\AppData\\Local\\Arduino15\\packages\\SODAQ\\hardware\\avr\\1.2.0\\**",
                 "C:\\Users\\DOLE JM\\AppData\\Local\\Arduino15\\packages\\arduino\\tools\\**",
                 "C:\\Users\\DOLE JM\\AppData\\Local\\Arduino15\\packages\\arduino\\hardware\\samd\\1.6.19\\**"
             ],
             "forcedInclude": [
-                "C:\\Users\\DOLE JM\\AppData\\Local\\Arduino15\\packages\\arduino\\hardware\\samd\\1.6.19\\cores\\arduino\\Arduino.h"
+                "C:\\Users\\DOLE JM\\AppData\\Local\\Arduino15\\packages\\SODAQ\\hardware\\avr\\1.2.0\\cores\\arduino\\Arduino.h"
             ],
             "intelliSenseMode": "msvc-x64"
         }

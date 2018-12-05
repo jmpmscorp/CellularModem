@@ -1,13 +1,13 @@
-#define CELLMODEM_UBLOX
+#define CELLMODEM_MODEL SIM800
 #include "CellularModem.h"
 
-CellularModem modem(SerialGSM, GSM_RESETN, -1, GSM_DTR, -1); 
+CellularModem modem(Serial1, BEEDTR, BEECTS, -1, -1); 
 //CellularModem modem(Serial, -1, -1, -1, -1);
 
 void setup() {
   // put your setup code here, to run once:
-  Serial.begin(115200);
-  SerialGSM.begin(115200);
+  Serial.begin(19200);
+  Serial1.begin(19200);
   modem.init();
   
 
@@ -23,7 +23,8 @@ void setup() {
   //modem.on();*/
   
   Serial.println(modem.networkOn());
-  modem.enableDatetimeNetworkSync();
+  delay(2000);
+  //modem.enableDatetimeNetworkSync();
   
 }
 
@@ -37,6 +38,6 @@ void loop() {
 
   Serial.println(time);
 
-  delay(10000);
+  delay(20000);
   // Serial.println("Retry");
 }

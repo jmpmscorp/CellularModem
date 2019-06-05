@@ -1,5 +1,5 @@
 #define CELLMODEM_MODEL SIM800
-#define CELLMODEM_USE_SMS
+#define CELLMODEM_USE_PHONEBOOK
 #include "CellularModem.h"
 
 #if defined(ARDUINO_AVR_SODAQ_MBILI)
@@ -19,24 +19,10 @@
 #define MAX_INDEX_LIST  30
 
 CellularModem modem(modemSerial, MODEM_ON_OFF_PIN, MODEM_STATUS_PIN, MODEM_DTR_PIN, MODEM_CTS_PIN); 
-CellularModemSMS sms(modem);
+CellularModemPhonebook phonebook(modem);
 
 char phoneNumber[20] = "";
-char textBuffer[161] = "";
-
-void onCMTI(char * onMemorySaved, uint16_t index) {
-  debugSerial.print(onMemorySaved);
-  debugSerial.print(",");
-  debugSerial.println(index);
-}
-
-void onCMT(char * remotePhoneNumber, char * textMessage) {
-  debugSerial.println();
-  debugSerial.print(remotePhoneNumber);
-  debugSerial.print(",");
-  debugSerial.println(textMessage);
-}
-
+char contactBuffer[20] = "";
 
 void setup() {
  
@@ -51,28 +37,16 @@ void setup() {
 
   modem.init();
   
-  sms.setCMTCallback(onCMT);
-  sms.setCMTICallback(onCMTI);
   modem.networkOn();
-  sms.setTextMode();
-  sms.setNewSMSIndicator(1,1);
 
-  unsigned int indexList[MAX_INDEX_LIST ];
-  unsigned int remainingSize;
   
-  int result = sms.readList("ALL", indexList, MAX_INDEX_LIST, &remainingSize);
-  debugSerial.println(result);
-  if(result > 0) {
-    debugSerial.print("Remaining Size: "); debugSerial.println(remainingSize);
-
-    for(size_t i = 0; i < result; ++i) {
-      debugSerial.println(indexList[i]);
-    }
-  }
-
-  sms.remove(0,4);
-
-  sms.send("+34650395489", "Hola");
+  phonebook.readSingleContact(1, phoneNumber, contactBuffer);
+    debugSerial.print("Phone Number: ");
+    debugSerial.println(phoneNumber);
+    debugSerial.print("Contact: ");
+    debugSerial.println(contactBuffer);
+  
+  
 }
 
 void loop() {

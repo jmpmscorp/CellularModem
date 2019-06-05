@@ -15,17 +15,36 @@
     #if CELLMODEM_MODEL == UBLOX
         #pragma message ("MODEL UBLOX")
         #include "ublox/UbloxModem.h"
-        #include "CellModemSMS.h"
-
         typedef UbloxModem CellularModem;
-        typedef CellModemSMS CellularModemSMS;
+
+        #ifdef CELLMODEM_USE_SMS
+            #include "CellModemSMS.h"
+            typedef CellModemSMS CellularModemSMS;
+        #endif
+
+        #ifdef CELLMODEM_USE_PHONEBOOK
+            #include "CellModemPhonebook.h"
+            typedef CellModemPhonebook CellularModemPhonebook;
+        #endif
+
+    
     #elif CELLMODEM_MODEL == SIM800
         #pragma message ("MODEL SIM800")
         #include "sim800/Sim800Modem.h"
-        #include "CellModemSMS.h"
-
         typedef Sim800Modem CellularModem;
-        typedef CellModemSMS CellularModemSMS;
+
+        #ifdef CELLMODEM_USE_SMS
+            #pragma message ("Using SMS Functionality");
+            #include "CellModemSMS.h"
+            typedef CellModemSMS CellularModemSMS;
+        #endif
+
+        #ifdef CELLMODEM_USE_PHONEBOOK
+            #pragma message ("Using Phonebook Functionality");
+            #include "CellModemPhonebook.h"
+            typedef CellModemPhonebook CellularModemPhonebook;
+        #endif
+
     #else
         #error "Cellular Modem Error. You should define CELLMODEM_MODEL"
     #endif

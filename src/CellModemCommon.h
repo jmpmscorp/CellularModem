@@ -49,7 +49,7 @@ typedef struct SafeCharBufferPtr
 {
     char * bufferPtr;
     size_t size;
-};
+}SafeCharBufferPtr_t;
 
 
 static inline bool isTimedout(uint32_t from, uint32_t nr_ms) __attribute__((always_inline));

@@ -71,7 +71,7 @@ ATResponse UbloxModem::_ctzuParser(ATResponse& response, const char * buffer, si
     return ATResponse::ResponseError;
 }
 
-bool UbloxModem::_sendInitializationCommands() {
+bool UbloxModem::_initializationProcess() {
     sendATCommand(F("AT+CMEE=2"));
 
     if(readResponse() != ATResponse::ResponseOK) {

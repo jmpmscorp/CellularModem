@@ -164,7 +164,7 @@ class CellModem {
     private:
         void _initResponseBuffer();
 
-        virtual bool _sendInitializationCommands();
+        virtual bool _initializationProcess();
         virtual int8_t _getAutoregistrationNetworkMode();        
         virtual bool _waitForSignalQuality(uint32_t timeout = 60 * 1000);  // 60 seconds
         

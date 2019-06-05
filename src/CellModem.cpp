@@ -121,7 +121,7 @@ bool CellModem::isAlive(uint16_t timeout) {
     return (readResponse(NULL, 500) == ATResponse::ResponseOK);
 }
 
-bool CellModem::_sendInitializationCommands() {
+bool CellModem::_initializationProcess() {
     sendATCommand(F("AT+CMEE=2"));
 
     if(readResponse() != ATResponse::ResponseOK) {
@@ -140,9 +140,9 @@ bool CellModem::networkOn(const char * pin, bool enableAutoregistration) {
         on();
     } 
 
-    _sendInitializationCommands();
+    _initializationProcess();
 
-    poll(10000);
+    //poll(10000);
 
     switch (getSIMStatus()) {
         case SIMStatus::Ready: {

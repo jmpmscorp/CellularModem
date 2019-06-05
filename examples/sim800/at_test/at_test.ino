@@ -1,4 +1,4 @@
-#define CELLMODEM_MODEL UBLOX
+#define CELLMODEM_MODEL SIM800
 #include "CellularModem.h"
 
 CellularModem modem(Serial1, BEEDTR, BEECTS, -1, -1); 
@@ -31,13 +31,19 @@ void setup() {
 void loop() {
   // put your main code here, to run repeatedly:
   //modem.isAlive(1000);º
-
+  static unsigned long milliseconds = millis();
   char time[22];
+  
+  while( millis() - milliseconds < 20000) {
+    modem.poll();
+    
+  }
 
+  milliseconds = millis();
   modem.getDatetime(time, sizeof(time));
 
   Serial.println(time);
 
-  delay(20000);
+  //delay(20000);
   // Serial.println("Retry");
 }

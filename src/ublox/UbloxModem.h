@@ -16,7 +16,7 @@ class UbloxModem : public CellModem {
     private:
         bool _setCTZU(uint8_t mode);
         int8_t _getCTZU();
-        bool _sendInitializationCommands();   
+        bool _initializationProcess();   
 
         static ATResponse _ctzuParser(ATResponse& response, const char * buffer, size_t size, unsigned int * mode, uint8_t * dummy);     
 };

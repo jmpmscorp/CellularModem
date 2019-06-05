@@ -3,7 +3,6 @@
 Sim800Modem::Sim800Modem(Stream &serial, int8_t onOffPin, int8_t statusPin, int8_t dtrPin, int8_t ctsPin) 
     : CellModem(serial, onOffPin, statusPin, dtrPin, ctsPin) 
 {
-
 }
 
 Sim800Modem::~Sim800Modem() {}
@@ -79,18 +78,40 @@ bool Sim800Modem::_setCLTS(uint8_t mode) {
     return false;
 }
 
+bool Sim800Modem::_initializationProcess() {
+    _gotCIEV = _getCLTS() == 1 ? false : true;
+    _gotSMSReady = false;
+    Serial.println(_gotCIEV);
+    addUrcHandler(this);
+
+    unsigned long start = millis();
+
+    do {
+        poll();
+    }while((!_gotSMSReady || !_gotCIEV) && !isTimedout(start, 10000));
+
+    _gotCIEV = _gotSMSReady = true;
+    removeUrcHandler(this);
+    
+    return true;
+    
+}
+
+ATResponse Sim800Modem::handleUrcs() {
+    if(strncmp_P(_responseBuffer, PSTR("SMS Ready"), 9) == 0) {
+        _gotSMSReady = true;
+    } else if(strncmp_P(_responseBuffer, PSTR("+CIEV"), 5) == 0) {
+        _gotCIEV = true;
+    }
+}
+
 int8_t Sim800Modem::_getCLTS() {
     sendATCommand(F("AT+CLTS?"));
 
     unsigned int mode;
-    if(readResponse<unsigned int, uint8_t>(_cltsParser, &mode, nullptr) == ATResponse::ResponseOK) {
-        Serial.println("Mode: ");
-        Serial.println(mode);
-        
+    if(readResponse<unsigned int, uint8_t>(_cltsParser, &mode, nullptr) == ATResponse::ResponseOK) {        
         return static_cast<int8_t>(mode);
     }
-
-    Serial.println("No Mode");
     return -1;
 }
 

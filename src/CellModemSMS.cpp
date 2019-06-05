@@ -93,7 +93,6 @@ int CellModemSMS::readList(const char * filter, unsigned int * indexList, size_t
         }
 
         if(auxSize < static_cast<int>(indexListSize)) {
-            Serial.println("Aqui");
             uint16_t i = 0, j = indexListSize - 1;
 
             while(i < j) {

@@ -24,6 +24,8 @@ CellularModemPhonebook phonebook(modem);
 char phoneNumber[20] = "";
 char contactBuffer[20] = "";
 
+const char * searchFilter = "+34";
+
 void setup() {
  
   debugSerial.begin(SERIAL_BAUDRATE);
@@ -39,14 +41,42 @@ void setup() {
   
   modem.networkOn();
 
+
+  if(phonebook.addContact("+34630123123")){
+    debugSerial.println("Conctact saved!");
+  }
   
-  phonebook.readSingleContact(1, phoneNumber, contactBuffer);
+  if(phonebook.readContact(1, phoneNumber, contactBuffer)) {
     debugSerial.print("Phone Number: ");
     debugSerial.println(phoneNumber);
     debugSerial.print("Contact: ");
     debugSerial.println(contactBuffer);
+  }
+
+  unsigned int indexContactFound;
+  unsigned int totalOccurences; 
+
+  int contactsWritten = phonebook.searchContacts(searchFilter, &indexContactFound, 1, &totalOccurences);
+  debugSerial.print("Contacts Written: ");
+  debugSerial.println(contactsWritten);
+  debugSerial.print("Contact Index: ");
+  debugSerial.println(indexContactFound);
+  debugSerial.print("Total Occurences: ");
+  debugSerial.println(totalOccurences);
+
+  phonebook.removeContact(4);
   
-  
+  unsigned int indexContactsFound[3];
+  contactsWritten = phonebook.searchContacts(searchFilter, indexContactsFound, 3, &totalOccurences);
+  debugSerial.print("Contacts Written: ");
+  debugSerial.println(contactsWritten);
+
+  for(uint8_t i = 0; i < contactsWritten; ++i) {
+    debugSerial.print("Contact Index: ");
+    debugSerial.println(indexContactsFound[i]);
+  }
+  debugSerial.print("Total Occurences: ");
+  debugSerial.println(totalOccurences);
 }
 
 void loop() {

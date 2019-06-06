@@ -5,9 +5,9 @@
 #if defined(ARDUINO_AVR_SODAQ_MBILI)
   #define modemSerial       Serial1
   #define MODEM_DTR_PIN     -1
-  #define MODEM_CTS_PIN     BEECTS
+  #define MODEM_CTS_PIN     -1
   #define MODEM_ON_OFF_PIN  BEEDTR
-  #define MODEM_STATUS_PIN  -1
+  #define MODEM_STATUS_PIN  BEECTS
 
   #define debugSerial       Serial
   #define SERIAL_BAUDRATE   19200 

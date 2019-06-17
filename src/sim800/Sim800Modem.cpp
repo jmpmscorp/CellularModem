@@ -81,7 +81,7 @@ bool Sim800Modem::_setCLTS(uint8_t mode) {
 bool Sim800Modem::_initializationProcess() {
     _gotCIEV = _getCLTS() == 1 ? false : true;
     _gotSMSReady = false;
-    Serial.println(_gotCIEV);
+    // Serial.println(_gotCIEV);
     addUrcHandler(this);
 
     unsigned long start = millis();

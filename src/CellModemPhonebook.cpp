@@ -6,7 +6,7 @@ CellModemPhonebook::CellModemPhonebook(CellModem &modem) :
 
     }
 
-bool CellModemPhonebook::addContact(const char * phoneNumber, const char * contactName, uint8_t index = 0) {
+bool CellModemPhonebook::addContact(const char * phoneNumber, const char * contactName, uint8_t index) {
     if(!phoneNumber) {
         return false;
     }

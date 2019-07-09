@@ -27,6 +27,11 @@
             typedef CellModemPhonebook CellularModemPhonebook;
         #endif
 
+        #ifdef CELLMODEM_USE_GPRS
+            #include "ublox/UbloxModemGPRS.h"
+            typedef UbloxModemGPRS CellularModemGPRS;
+        #endif
+
     
     #elif CELLMODEM_MODEL == SIM800
         #pragma message ("MODEL SIM800")

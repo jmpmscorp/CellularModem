@@ -1,6 +1,8 @@
 #define CELLMODEM_MODEL UBLOX
-#define CELLMODEM_USE_GPRS
 #include "CellularModem.h"
+#include "ArduinoHttpClient.h"
+
+#define LOGGING true
 
 #ifdef ARDUINO_SAMD_MKRGSM1400
   #define modemSerial       SerialGSM
@@ -17,8 +19,12 @@
 
 
 CellularModem modem(modemSerial, MODEM_ON_OFF_PIN, MODEM_STATUS_PIN, MODEM_DTR_PIN, MODEM_CST_PIN); 
-CellularModemGPRS gprs(modem);
+CellularModemClient client(modem);
 
+const char * server = "antaresserver.dynu.net";
+const int port = 80;
+
+HttpClient http(client, server, port);
 
 void setup() {
  
@@ -31,18 +37,45 @@ void setup() {
   
   modem.networkOn();
 
-  if(!gprs.isConnected()) {
-    gprs.attach("orangeworld", nullptr, nullptr);
+  if(!modem.isGPRSConnected()) {
+    modem.attachGPRS("orangeworld", nullptr, nullptr);
+
+    int error = http.get("/videlsur");
+
+    if(error != 0) {
+      debugSerial.println("Failed to get resource");
+    }
+
+    int status = http.responseStatusCode();
+
+    debugSerial.print("Response Code: ");
+    debugSerial.println(status);
+
+    while(http.headerAvailable()) {
+      String headerName = http.readHeaderName();
+      String headerValue = http.readHeaderValue();
+      debugSerial.println("    " + headerName + " : " + headerValue);
+    }
+    
+    http.stop();
   }
 }
 
 void loop() {
-  static unsigned long millisTime = millis();
+  /* static unsigned long millisTime = millis();
   
   modem.poll();
 
   if(millis() - millisTime > 10000) {
     gprs.isConnected();
     millisTime = millis();
+  } */
+
+  if (Serial.available()) {
+    SerialGSM.write(Serial.read());
+  }
+
+  if (SerialGSM.available()) {
+    Serial.write(SerialGSM.read());
   }
 }

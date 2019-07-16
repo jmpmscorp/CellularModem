@@ -15,7 +15,10 @@
     #if CELLMODEM_MODEL == UBLOX
         #pragma message ("MODEL UBLOX")
         #include "ublox/UbloxModem.h"
+        #include "ublox/UbloxModemClient.h"
+        
         typedef UbloxModem CellularModem;
+        typedef UbloxModemClient CellularModemClient;
 
         #ifdef CELLMODEM_USE_SMS
             #include "CellModemSMS.h"
@@ -26,12 +29,6 @@
             #include "CellModemPhonebook.h"
             typedef CellModemPhonebook CellularModemPhonebook;
         #endif
-
-        #ifdef CELLMODEM_USE_GPRS
-            #include "ublox/UbloxModemGPRS.h"
-            typedef UbloxModemGPRS CellularModemGPRS;
-        #endif
-
     
     #elif CELLMODEM_MODEL == SIM800
         #pragma message ("MODEL SIM800")

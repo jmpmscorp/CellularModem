@@ -61,6 +61,10 @@ class CellModem {
         virtual bool isNetworkRegistered();
         virtual NetworkRegistrationStatus getNetworkRegistrationStatus();
 
+        virtual bool attachGPRS(const char * apn, const char * username, const char * password) = 0;
+        virtual bool detachGRPS() = 0;
+        virtual bool isGPRSConnected() = 0;
+
         virtual bool setSIMPin(const char * pin);
         virtual SIMStatus getSIMStatus();
 
@@ -139,6 +143,9 @@ class CellModem {
         size_t readLine(uint32_t);
         size_t readLine(char * buffer, size_t length, uint32_t timeout = 1000);
         
+        Stream * getSerial() const { return _serial; };
+
+
     protected:
         int readByte(uint32_t timeout = 1000) const;
         size_t readBytes(uint8_t * buffer, size_t length, uint32_t timeout = 1000);
@@ -172,7 +179,7 @@ class CellModem {
         bool _isResponseBufferInitialized = false;
 
         CellModemUrcHandler * _urcHandlers[CELLMODEM_MAX_URC_HANDLERS];
-        
+        // CellModemClientsHandler * _clientsHandler;
 
 
         static ATResponse _copsParser(ATResponse &response, const char * buffer, size_t size, char * operatorNameBuffer, size_t * operatorNameBufferSize);

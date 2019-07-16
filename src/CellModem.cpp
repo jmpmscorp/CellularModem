@@ -538,7 +538,7 @@ ATResponse CellModem::readResponse(char* buffer, size_t size,
         for (size_t i = 0; i < CELLMODEM_MAX_URC_HANDLERS; ++i) {
             if( _urcHandlers[i] != nullptr ) {
                ATResponse res = _urcHandlers[i] -> handleUrcs();
-               if(res == ATResponse::ResponseEmpty) {
+               if(res == ATResponse::UrcHandled) {
                    Serial.println("Here");
                    continue;
                }

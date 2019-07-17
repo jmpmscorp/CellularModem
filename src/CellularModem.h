@@ -29,8 +29,10 @@
         #endif
 
         #ifdef CELLMODEM_USE_HTTP
+            #include "ublox/UbloxModemFilesystem.h"
             #include "ublox/UbloxModemHttp.h"
             typedef UbloxModemHttp CellularModemHttp;
+            typedef UbloxModemFilesystem CellularModemFilesystem;
         #endif
     
     #elif CELLMODEM_MODEL == SIM800

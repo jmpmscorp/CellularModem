@@ -1,12 +1,20 @@
 #include "UbloxModemHttp.h"
 
 #define DEFAULT_HTTP_PROFILE    0
-#define TEMP_FILE               "temp.ffs"
+#define WRITE_TEMP_FILE         "writeTemp.ffs"
+#define READ_TEMP_FILE          "readTemp.ffs"
 
 UbloxModemHttp::UbloxModemHttp(UbloxModem &modem) :
     CellModemHttp(modem)
 {
     _modem->addUrcHandler(this);
+}
+
+UbloxModemHttp::UbloxModemHttp(UbloxModem &modem, UbloxModemFilesystem &filesystem) :
+    CellModemHttp(modem),
+    _filesystem(&filesystem)
+{
+
 }
 
 bool UbloxModemHttp::init(const char * server, const uint16_t port) {
@@ -49,7 +57,7 @@ bool UbloxModemHttp::_init(const char * server, const uint16_t port, const bool 
 
 bool UbloxModemHttp::get(const char * path) {
 
-    _modem->sendATCommand(F("AT+UHTTPC="), DEFAULT_HTTP_PROFILE, ",1,\"", path,"\",\"", TEMP_FILE, "\"");
+    _modem->sendATCommand(F("AT+UHTTPC="), DEFAULT_HTTP_PROFILE, ",1,\"", path,"\",\"", READ_TEMP_FILE, "\"");
 
     if(_modem->readResponse() != ATResponse::ResponseOK) {
         return false;
@@ -74,30 +82,42 @@ bool UbloxModemHttp::get(const char * path) {
             }
         }
 
-        _modem->sendATCommand(F("AT+URDFILE=\""), TEMP_FILE, '"');
+        _modem->sendATCommand(F("AT+URDFILE=\""), READ_TEMP_FILE, '"');
 
         if(_modem->readResponse() != ATResponse::ResponseOK) {
             return false;
         }
     }
 
-    // if(_modem->readResponse<int, uint8_t>(_uuhttpcrParser, &result, nullptr, nullptr, 20000) == ATResponse::ResponseOK) {
-    //     _modem->sendATCommand(F("AT+URDFILE=\""), TEMP_FILE, '"');
-
-    //     if(_modem->readResponse() != ATResponse::ResponseOK) {
-    //         return false;
-    //     }
-    // }    
-
     return true;
 }
 
 bool UbloxModemHttp::post(const char * path, const uint8_t * buffer, size_t len) {
-    return true;
+    if(!_filesystem) return false;
+
+    if(_filesystem->existFile(WRITE_TEMP_FILE)) {
+        _filesystem->deleteFile(WRITE_TEMP_FILE);
+    }
+
+    uint32_t filesize = _filesystem->getMaxFileSize();
+    // auto toWrite = len < filesize ? len : filesize;
+    // Serial.print("To Write: "); Serial.println(toWrite);
+
+
+    _filesystem->writeFile(WRITE_TEMP_FILE, buffer, len < filesize ? len : filesize);
+    _filesystem->readFile(WRITE_TEMP_FILE, nullptr);
+    //_modem->sendATCommand(F("AT+UHTTPC="), DEFAULT_HTTP_PROFILE, ",1,\"", path,"\",\"", READ_TEMP_FILE, "\"");
 }
 
 bool UbloxModemHttp::post(const char * path, Stream * stream) {
     return true;
+}
+
+bool UbloxModemHttp::_initWriteTempFile(const char * buffer, const size_t size) {
+    // Get de filesize limit
+    _modem->sendATCommand(F("AT+ULSTFILE=1"));
+
+
 }
 
 ATResponse UbloxModemHttp::_uuhttpcrParser(ATResponse &response, const char * buffer, size_t size, int * result, uint8_t * dummy) {

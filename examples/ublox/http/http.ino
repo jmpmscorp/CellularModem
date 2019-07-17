@@ -18,7 +18,13 @@
 
 
 CellularModem modem(modemSerial, MODEM_ON_OFF_PIN, MODEM_STATUS_PIN, MODEM_DTR_PIN, MODEM_CST_PIN); 
-CellularModemHttp http(modem);
+
+#if CELLMODEM_MODEL == UBLOX
+  CellularModemFilesystem filesystem(modem);
+  CellularModemHttp http(modem, filesystem);
+#else
+  CellularModemHttp hptt(modem);
+#endif
 
 const char * server = "doleaguaycontrol.es";
 const int port = 80;
@@ -39,7 +45,11 @@ void setup() {
     modem.attachGPRS("orangeworld", nullptr, nullptr);
 
     http.initSSL(server);
-    http.get("/");
+    
+    //http.get("/");
+    http.post("/", (uint8_t *)"hola", 4);
+
+    filesystem.deleteFile("writeTemp.ffs");
   }
 }
 

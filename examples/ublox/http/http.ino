@@ -26,8 +26,8 @@ CellularModem modem(modemSerial, MODEM_ON_OFF_PIN, MODEM_STATUS_PIN, MODEM_DTR_P
   CellularModemHttp hptt(modem);
 #endif
 
-const char * server = "doleaguaycontrol.es";
-const int port = 80;
+const char * server = "antaresserver.dynu.net";
+//const int port = 80;
 
 
 void setup() {
@@ -45,11 +45,13 @@ void setup() {
     modem.attachGPRS("orangeworld", nullptr, nullptr);
 
     http.initSSL(server);
-    
-    //http.get("/");
-    http.post("/", (uint8_t *)"hola", 4);
 
-    filesystem.deleteFile("writeTemp.ffs");
+    const char * data = "{\"time\":1563334234,\"oilPressure\":51.26}";
+    //http.get("/");
+    http.post("/videlsur/api/farmTool/123456", (uint8_t*)data, strlen(data));
+
+    //filesystem.deleteFile("writeTemp.ffs");
+    debugSerial.println("End");
   }
 }
 

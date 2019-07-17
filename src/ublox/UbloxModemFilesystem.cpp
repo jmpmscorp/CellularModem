@@ -44,8 +44,27 @@ bool UbloxModemFilesystem::writeFile(const char * filename, const uint8_t * buff
     return false;
 }
 
-bool UbloxModemFilesystem::writeFile(const char * filename, Stream * stream, const size_t size) {
 
+bool UbloxModemFilesystem::writeFile(const char * filename, Stream * stream, const size_t size) {
+    _modem->sendATCommand(F("AT+UDWNFILE=\""), filename, "\",", size);
+
+    if(_modem->readResponse(nullptr, 10000) == ATResponse::ResponsePrompt) {
+        size_t written = 0;
+        unsigned long start = millis();
+
+        while(written < size && !isTimedout(start, 10000)) {
+            if(stream->available()) {
+                _modem->getSerial()->write(stream->read());
+                ++written;
+            }
+        }
+
+        if(_modem->readResponse() == ATResponse::ResponseOK) {
+            return true;
+        }
+    }   
+
+    return false;
 }
 
 bool UbloxModemFilesystem::readFile(const char * filename, ReadFileParserCb * readparser) {

@@ -15,7 +15,7 @@ class UbloxModemHttp : public CellModemHttp, public CellModemUrcHandler {
 
         virtual bool get(const char * path);
         virtual bool post(const char * path, const uint8_t * buffer, size_t len);
-        virtual bool post(const char * path, Stream * stream);
+        virtual bool post(const char * path, Stream * stream, const size_t size);
 
         virtual ATResponse handleUrcs();
 

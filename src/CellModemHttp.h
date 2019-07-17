@@ -13,7 +13,7 @@ class CellModemHttp {
 
         virtual bool get(const char * path) = 0;
         virtual bool post(const char * path, const uint8_t * buffer, size_t len) = 0;
-        virtual bool post(const char * path, Stream * stream) = 0;
+        virtual bool post(const char * path, Stream * stream, const size_t size) = 0;
 
     protected:
         CellModem * _modem;

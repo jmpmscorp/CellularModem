@@ -46,11 +46,35 @@ void setup() {
 
     http.initSSL(server);
 
-    const char * data = "{\"time\":1563334234,\"oilPressure\":51.26}";
-    //http.get("/");
-    http.post("/videlsur/api/farmTool/123456", (uint8_t*)data, strlen(data));
+    const char * data = "{\"time\":1563364234,\"oilPressure\":51.26}";
+    
 
-    //filesystem.deleteFile("writeTemp.ffs");
+    char bodyBuffer[512];
+    CellModemHttpHeader_t header;
+
+    http.get("/", (uint8_t *)bodyBuffer, sizeof(bodyBuffer), &header);
+    //http.post("/videlsur/api/farmTool/123456","application/json", (uint8_t*)data, strlen(data), (uint8_t *)bodyBuffer, sizeof(bodyBuffer), &header);
+
+
+    /*unsigned long start = millis();
+    while(!http.isResponseAvailable() && millis() - start < 20000) {
+      modem.poll();
+    }
+
+    if(http.isResponseAvailable()) {
+      http.readResponse(&header, nullptr, 5);
+    }*/
+
+    Serial.print("Protocol Version: ");
+    Serial.println((uint8_t)header.protocol);
+    Serial.print("Response Status: "); 
+    Serial.println(header.status);
+
+    Serial.println();
+    Serial.println(bodyBuffer);
+
+    Serial.print("Body Lenght: ");
+    Serial.println(strlen(bodyBuffer));
     debugSerial.println("End");
   }
 }

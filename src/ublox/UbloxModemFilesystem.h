@@ -2,7 +2,7 @@
 
 #include "UbloxModem.h"
 
-typedef void (*ReadFileParserCb)();
+typedef ATResponse (*ReadFileParserCb)(ATResponse &response, const char * buffer, size_t size, void* param1, void* param2);
 
 class UbloxModemFilesystem {
     public:
@@ -11,7 +11,7 @@ class UbloxModemFilesystem {
         uint32_t getMaxFileSize();
         bool writeFile(const char * filename, const uint8_t * buffer, const size_t size);
         bool writeFile(const char * filename, Stream * stream, const size_t size);
-        bool readFile(const char * filename, ReadFileParserCb * readCb);
+        bool readFile(const char * filename, ReadFileParserCb readCb, void * param1, void * param2);
         bool existFile(const char * filename);
         bool deleteFile(const char * filename);
         

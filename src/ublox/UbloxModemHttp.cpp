@@ -1,8 +1,8 @@
 #include "UbloxModemHttp.h"
 
 #define DEFAULT_HTTP_PROFILE    0
-#define WRITE_TEMP_FILE         "writeTemp.json"
-#define READ_TEMP_FILE          "readTemp.json"
+#define WRITE_TEMP_FILE         "writeTemp.ffs"
+#define READ_TEMP_FILE          "readTemp.ffs"
 
 UbloxModemHttp::UbloxModemHttp(UbloxModem &modem) :
     CellModemHttp(modem)
@@ -55,7 +55,11 @@ bool UbloxModemHttp::_init(const char * server, const uint16_t port, const bool 
     return true;
 }
 
-bool UbloxModemHttp::get(const char * path) {
+bool UbloxModemHttp::isResponseAvailable() const {
+    return _httpResultAvailable;
+}
+
+bool UbloxModemHttp::get(const char * path, uint8_t * receiveBuffer, const size_t receiveLen, CellModemHttpHeader_t * header) {
 
     _modem->sendATCommand(F("AT+UHTTPC="), DEFAULT_HTTP_PROFILE, ",1,\"", path,"\",\"", READ_TEMP_FILE, "\"");
 
@@ -64,81 +68,42 @@ bool UbloxModemHttp::get(const char * path) {
     }
 
     _httpResultAvailable = false;
-    unsigned long start = millis();
 
-    do {
-        _modem->poll();    
-    }while(!_httpResultAvailable && !isTimedout(start, 20000));
-
-    if(_httpResultAvailable) {
-        if(!_httpResult) {
-            int errorClass, errorCode;
-
-            _modem->sendATCommand(F("AT+UHTTPER="), DEFAULT_HTTP_PROFILE);
-
-            if(_modem->readResponse<int, int>(_uhttperParser, &errorClass, &errorCode) == ATResponse::ResponseOK) {
-                Serial.print("Error Class: "); Serial.println(errorClass);
-                Serial.print("Error Code: "); Serial.println(errorCode);
-            }
-        }
-
-        _modem->sendATCommand(F("AT+URDFILE=\""), READ_TEMP_FILE, '"');
-
-        if(_modem->readResponse() != ATResponse::ResponseOK) {
-            return false;
-        }
+    if(!receiveBuffer && !header) {
+        return true;
     }
 
-    return true;
+    return _waitHttpResponse(receiveBuffer, receiveLen, header);
 }
 
-bool UbloxModemHttp::post(const char * path, const uint8_t * buffer, size_t len) {
-    if(!_initWriteTempFile(WRITE_TEMP_FILE, len)) return false;
+bool UbloxModemHttp::post(const char * path, const char * contentType, const uint8_t * sendBuffer, size_t sendLen, 
+                        uint8_t * receiveBuffer, const size_t receiveLen, CellModemHttpHeader_t * header) {
+    
+    if(!_initWriteTempFile(WRITE_TEMP_FILE, sendLen)) return false;
 
     uint32_t filesize = _filesystem->getMaxFileSize();
 
-    if(!_filesystem->writeFile(WRITE_TEMP_FILE, buffer, len < filesize ? len : filesize)) {
+    if(!_filesystem->writeFile(WRITE_TEMP_FILE, sendBuffer, sendLen < filesize ? sendLen : filesize)) {
         return false;
     }
 
     _httpResultAvailable = false;
-    _modem->sendATCommand(F("AT+UHTTPC="), DEFAULT_HTTP_PROFILE,",4,\"", path, "\",\"", READ_TEMP_FILE, "\",\"", WRITE_TEMP_FILE, "\",", 4);
+    _modem->sendATCommand(F("AT+UHTTPC="), DEFAULT_HTTP_PROFILE,",4,\"", path, "\",\"", READ_TEMP_FILE, "\",\"", WRITE_TEMP_FILE, "\",", 6, ",\"", contentType, "\"");
     
 
     if(_modem->readResponse() != ATResponse::ResponseOK) {
         return false;
     }
 
-    unsigned long start = millis();
 
-    do {
-        _modem->poll();    
-    }while(!_httpResultAvailable && !isTimedout(start, 20000));
-
-    delay(1000);
-    if(_httpResultAvailable) {
-        if(!_httpResult) {
-            int errorClass, errorCode;
-
-            _modem->sendATCommand(F("AT+UHTTPER="), DEFAULT_HTTP_PROFILE);
-
-            if(_modem->readResponse<int, int>(_uhttperParser, &errorClass, &errorCode) == ATResponse::ResponseOK) {
-                Serial.print("Error Class: "); Serial.println(errorClass);
-                Serial.print("Error Code: "); Serial.println(errorCode);
-            }
-        }
-
-        _modem->sendATCommand(F("AT+URDFILE=\""), READ_TEMP_FILE, '"');
-
-        if(_modem->readResponse() != ATResponse::ResponseOK) {
-            return false;
-        }
+    if(!receiveBuffer && !header) {
+        return true;
     }
-    
 
+    return _waitHttpResponse(receiveBuffer, receiveLen, header);
 }
 
-bool UbloxModemHttp::post(const char * path, Stream * stream, const size_t size) {
+bool UbloxModemHttp::post(const char * path, const char * contentType, Stream * stream, const size_t size) {
     if(!_initWriteTempFile(WRITE_TEMP_FILE, size)) return false;
 
     uint32_t filesize = _filesystem->getMaxFileSize();
@@ -158,6 +123,104 @@ bool UbloxModemHttp::_initWriteTempFile(const char * buffer, const size_t size) 
     }
 
     return true;
+}
+
+bool UbloxModemHttp::_waitHttpResponse(uint8_t * receiveBuffer, const size_t receiveLen, CellModemHttpHeader_t * header) {
+    unsigned long start = millis();
+
+    do {
+        _modem->poll();    
+    }while(!_httpResultAvailable && !isTimedout(start, 30000));
+
+    
+    if(_httpResultAvailable) {
+        int errorClass, errorCode;
+        if(!_httpResult) {      
+
+            _modem->sendATCommand(F("AT+UHTTPER="), DEFAULT_HTTP_PROFILE);
+
+            if(_modem->readResponse<int, int>(_uhttperParser, &errorClass, &errorCode) == ATResponse::ResponseOK) {
+                
+            }
+
+            return false;
+        } else {
+            readResponse(header, (char *)receiveBuffer, receiveLen);
+        }
+        
+        _httpError.errorClass = errorClass;
+        _httpError.errorCode = errorCode;
+    } 
+}
+
+bool UbloxModemHttp::readResponse(CellModemHttpHeader_t * header, char * bodyBuffer, size_t len) {
+    uint32_t contentLenght = 0;
+    *bodyBuffer = '\0';
+    SafeCharBufferPtr_t safeCharBuffer = {bodyBuffer, len};
+    UbloxHttpResponseParser_t parserStruct = {header, &safeCharBuffer};
+    return _filesystem->readFile(READ_TEMP_FILE, _responseParser, &parserStruct, &contentLenght);
+}
+
+ATResponse UbloxModemHttp::_responseParser(ATResponse &response, const char * buffer, size_t size, void * param1, void * param2) {    
+    UbloxHttpResponseParser_t * parserStruct = (UbloxHttpResponseParser_t *)param1;
+
+    if(parserStruct == nullptr) return ATResponse::ResponseEmpty;
+
+    if(!parserStruct->bodyStart) {
+        if(parserStruct->header != nullptr) {
+            if(strncmp_P(buffer, PSTR("+URDFILE"), 8) == 0) {
+                char *ptr = strstr_P(buffer, PSTR("HTTP/1.1"));
+
+                if(ptr != nullptr) {
+                    ptr = ptr + 9; //Skip HTTP/1.1;
+                    parserStruct->header->protocol = CellModemHttpProtocol::HTTP1_1;
+                    parserStruct->header->status = strtol(ptr, &ptr, 10);
+                    return ATResponse::ResponseMultilineParser;
+                }
+            }
+        }
+
+        if(param2 != nullptr) {
+            if(strncasecmp_P(buffer, PSTR("Content-Length"), 14) == 0) {
+                char *ptr = strchr(buffer, ':');
+
+                if(ptr != nullptr) {
+                    ++ptr; // Skip whitespace
+                    *(uint32_t *)param2 = strtol(ptr, &ptr, 10);
+                    return ATResponse::ResponseMultilineParser;
+                }
+            }
+        }
+    }
+    
+    
+    if(parserStruct->bodyStart && parserStruct->body != nullptr) {
+        uint32_t * contentLength = (uint32_t *)param2;
+        if(strlen(parserStruct->body->bufferPtr) >= *contentLength || *contentLength <= 0) {
+            return ATResponse::ResponseEmpty;
+        }
+
+        
+        uint16_t freeSpace = parserStruct->body->size - strlen(parserStruct->body->bufferPtr) - 1;
+        uint16_t bufferLen = strlen(buffer);
+
+        if(c_str_endsWith(buffer, "\"")) {
+            --bufferLen;    // Skip last " from modem response
+        }
+
+        strncat(parserStruct->body->bufferPtr, buffer, freeSpace > bufferLen ? bufferLen : freeSpace);
+
+    }
+
+    if(parserStruct != nullptr && !parserStruct->bodyStart && strlen(buffer) == 0) {
+        parserStruct->bodyStart = true;
+    }
+
+    return ATResponse::ResponseMultilineParser;
+}
+
+CellModemHttpError_t UbloxModemHttp::readLastError() {
+    return _httpError;
 }
 
 ATResponse UbloxModemHttp::_uuhttpcrParser(ATResponse &response, const char * buffer, size_t size, int * result, uint8_t * dummy) {

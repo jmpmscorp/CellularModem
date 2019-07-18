@@ -67,10 +67,10 @@ bool UbloxModemFilesystem::writeFile(const char * filename, Stream * stream, con
     return false;
 }
 
-bool UbloxModemFilesystem::readFile(const char * filename, ReadFileParserCb * readparser) {
+bool UbloxModemFilesystem::readFile(const char * filename, ReadFileParserCb readparser, void* param1, void* param2) {
     _modem->sendATCommand(F("AT+URDFILE=\""), filename, "\"");
 
-    if(_modem->readResponse<ReadFileParserCb, uint8_t>(_readfileParser, readparser, nullptr) == ATResponse::ResponseOK) {
+    if(_modem->readResponse<void, void>(*readparser, param1, param2) == ATResponse::ResponseOK) {
         return true;
     }
 
@@ -78,9 +78,9 @@ bool UbloxModemFilesystem::readFile(const char * filename, ReadFileParserCb * re
 }
 
 ATResponse UbloxModemFilesystem::_readfileParser(ATResponse &response, const char * buffer, size_t size, ReadFileParserCb * readparser, uint8_t * dummy) {
-    if(readparser) {
-        (*readparser)();
-    }
+    // if(readparser) {
+    //     (*readparser)();
+    // }
 
     return ATResponse::ResponseMultilineParser;
 }

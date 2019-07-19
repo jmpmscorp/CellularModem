@@ -24,7 +24,6 @@ bool UbloxModem::_initializationProcess() {
     if(readResponse() != ATResponse::ResponseOK) {
         return false;
     }
-
     return true;
 }
 

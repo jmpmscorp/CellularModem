@@ -39,7 +39,6 @@ void CellModem::_initResponseBuffer() {
 
 
 bool CellModem::on() {
-
     if(isAlive(200)) {
         return true;
     }
@@ -117,8 +116,12 @@ bool CellModem::isAlive(uint16_t timeout) {
     unsigned long start = millis();
     
     sendATCommand(F("AT"));
-        
-    return (readResponse(NULL, 500) == ATResponse::ResponseOK);
+
+    if(readResponse(nullptr, 1000) == ATResponse::ResponseOK) {
+        return true;
+    }
+
+    return false;
 }
 
 bool CellModem::_initializationProcess() {
@@ -539,7 +542,6 @@ ATResponse CellModem::readResponse(char* buffer, size_t size,
             if( _urcHandlers[i] != nullptr ) {
                ATResponse res = _urcHandlers[i] -> handleUrcs();
                if(res == ATResponse::UrcHandled) {
-                   Serial.println("Here");
                    continue;
                }
             }

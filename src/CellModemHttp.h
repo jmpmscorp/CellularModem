@@ -17,7 +17,7 @@ typedef struct CellModemHttpHeader_t {
 typedef struct CellModemHttpError_t {
     uint16_t errorClass;
     uint16_t errorCode;
-};
+}CellModemHttpError_t;
 
 class CellModemHttp {
     public:

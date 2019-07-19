@@ -69,7 +69,7 @@ bool UbloxModemHttp::get(const char * path, uint8_t * receiveBuffer, const size_
 
     _httpResultAvailable = false;
 
-    if(!receiveBuffer && !header) {
+    if(receiveBuffer == nullptr && header == nullptr) {
         return true;
     }
 
@@ -96,7 +96,7 @@ bool UbloxModemHttp::post(const char * path, const char * contentType, const uin
     }
 
 
-    if(!receiveBuffer && !header) {
+    if(receiveBuffer == nullptr && header == nullptr) {
         return true;
     }
 
@@ -108,7 +108,7 @@ bool UbloxModemHttp::post(const char * path, const char * contentType, Stream * 
 
     uint32_t filesize = _filesystem->getMaxFileSize();
 
-    _filesystem->writeFile(WRITE_TEMP_FILE, stream, size < filesize ? size : filesize);
+    return _filesystem->writeFile(WRITE_TEMP_FILE, stream, size < filesize ? size : filesize);
 }
 
 bool UbloxModemHttp::_initWriteTempFile(const char * buffer, const size_t size) {
@@ -129,9 +129,9 @@ bool UbloxModemHttp::_waitHttpResponse(uint8_t * receiveBuffer, const size_t rec
     unsigned long start = millis();
 
     do {
-        _modem->poll();    
+        _modem->poll(); 
+        _modem->getCustomDelay()(10);   
     }while(!_httpResultAvailable && !isTimedout(start, 30000));
-
     
     if(_httpResultAvailable) {
         int errorClass, errorCode;
@@ -151,12 +151,16 @@ bool UbloxModemHttp::_waitHttpResponse(uint8_t * receiveBuffer, const size_t rec
         _httpError.errorClass = errorClass;
         _httpError.errorCode = errorCode;
     } 
+
+    return true;
 }
 
 bool UbloxModemHttp::readResponse(CellModemHttpHeader_t * header, char * bodyBuffer, size_t len) {
     uint32_t contentLenght = 0;
-    *bodyBuffer = '\0';
     SafeCharBufferPtr_t safeCharBuffer = {bodyBuffer, len};
+    if(safeCharBuffer.bufferPtr != nullptr) {
+        memset(safeCharBuffer.bufferPtr, '\0', len);
+    }
     UbloxHttpResponseParser_t parserStruct = {header, &safeCharBuffer};
     return _filesystem->readFile(READ_TEMP_FILE, _responseParser, &parserStruct, &contentLenght);
 }
@@ -194,7 +198,7 @@ ATResponse UbloxModemHttp::_responseParser(ATResponse &response, const char * bu
     }
     
     
-    if(parserStruct->bodyStart && parserStruct->body != nullptr) {
+    if(parserStruct->bodyStart && parserStruct->body->bufferPtr != nullptr) {
         uint32_t * contentLength = (uint32_t *)param2;
         if(strlen(parserStruct->body->bufferPtr) >= *contentLength || *contentLength <= 0) {
             return ATResponse::ResponseEmpty;
@@ -224,7 +228,8 @@ CellModemHttpError_t UbloxModemHttp::readLastError() {
 }
 
 ATResponse UbloxModemHttp::_uuhttpcrParser(ATResponse &response, const char * buffer, size_t size, int * result, uint8_t * dummy) {
-    if(!result) ATResponse::ResponseError;
+    if(result == nullptr) return ATResponse::ResponseError;
+    
 
     if(sscanf_P(buffer, PSTR("+UUHTTPCR: %*d,%*d,%d"), result) == 1) {
         return ATResponse::ResponseEmpty;
@@ -251,4 +256,6 @@ ATResponse UbloxModemHttp::handleUrcs() {
         
         return ATResponse::UrcHandled;
     }
+    
+    return ATResponse::ResponseEmpty;
 }

@@ -33,6 +33,11 @@ bool UbloxModem::attachGPRS(const char * apn, const char * username, const char 
         return false;
     }
 
+
+    if(isGPRSConnected()) {
+        detachGRPS();
+    }
+
     sendATCommand(F("AT+UPSD="), DEFAULT_GPRS_PROFILE, ",1,\"", apn, "\"");
 
     if(readResponse() != ATResponse::ResponseOK) {
@@ -78,7 +83,13 @@ bool UbloxModem::attachGPRS(const char * apn, const char * username, const char 
 }
 
 bool UbloxModem::detachGRPS() {
-    return true;
+    sendATCommand(F("AT+UPSDA="), DEFAULT_GPRS_PROFILE, ",4");
+
+    if(readResponse(nullptr, 40000) == ATResponse::ResponseOK) {
+        return true;
+    }    
+
+    return false;
 }
 
 bool UbloxModem::isGPRSConnected() {

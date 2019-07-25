@@ -59,6 +59,10 @@ bool UbloxModemHttp::isResponseAvailable() const {
     return _httpResultAvailable;
 }
 
+bool UbloxModemHttp::getHttpResult() const {
+    return _httpResult;
+}
+
 bool UbloxModemHttp::get(const char * path, uint8_t * receiveBuffer, const size_t receiveLen, CellModemHttpHeader_t * header) {
 
     _modem->sendATCommand(F("AT+UHTTPC="), DEFAULT_HTTP_PROFILE, ",1,\"", path,"\",\"", READ_TEMP_FILE, "\"");
@@ -163,6 +167,18 @@ bool UbloxModemHttp::_waitHttpResponse(uint8_t * receiveBuffer, const size_t rec
 }
 
 bool UbloxModemHttp::readResponse(CellModemHttpHeader_t * header, char * bodyBuffer, size_t len) {
+    if(!_httpResult) {
+        int errorClass, errorCode;
+        _modem->sendATCommand(F("AT+UHTTPER="), DEFAULT_HTTP_PROFILE);
+
+        _modem->readResponse<int, int>(_uhttperParser, &errorClass, &errorCode) == ATResponse::ResponseOK;
+        
+        _httpError.errorClass = errorClass;
+        _httpError.errorCode = errorCode;
+        
+        return false;
+    }
+    
     uint32_t contentLenght = 0;
     SafeCharBufferPtr_t safeCharBuffer = {bodyBuffer, len};
     if(safeCharBuffer.bufferPtr != nullptr) {

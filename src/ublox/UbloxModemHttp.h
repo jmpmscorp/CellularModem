@@ -24,6 +24,7 @@ class UbloxModemHttp : public CellModemHttp, public CellModemUrcHandler {
                         uint8_t * receiveBuffer = nullptr, const size_t receiveLen = 0, CellModemHttpHeader_t * header = nullptr);
 
         virtual bool isResponseAvailable() const; 
+        virtual bool getHttpResult() const;
         virtual bool readResponse(CellModemHttpHeader_t * header, char * bodyBuffer, size_t size);
         virtual CellModemHttpError_t readLastError();
 

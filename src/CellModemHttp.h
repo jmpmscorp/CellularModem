@@ -32,7 +32,8 @@ class CellModemHttp {
         virtual bool post(const char * path, const char * contentType, const uint8_t * sendBuffer, size_t sendLen, 
                         uint8_t * receiveBuffer, const size_t receiveLen, CellModemHttpHeader_t * header) = 0;
         
-        virtual bool post(const char * path, const char * contentType, Stream * sendStream, const size_t size) = 0;
+        virtual bool post(const char * path, const char * contentType, Stream * sendStream, const size_t size,
+                        uint8_t * receiveBuffer, const size_t receiveLen, CellModemHttpHeader_t * header) = 0;
 
         virtual CellModemHttpError_t readLastError() = 0;
 

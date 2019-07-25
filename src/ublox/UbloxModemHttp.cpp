@@ -67,13 +67,7 @@ bool UbloxModemHttp::get(const char * path, uint8_t * receiveBuffer, const size_
         return false;
     }
 
-    _httpResultAvailable = false;
-
-    if(receiveBuffer == nullptr && header == nullptr) {
-        return true;
-    }
-
-    return _waitHttpResponse(receiveBuffer, receiveLen, header);
+    return _endRequest(receiveBuffer, receiveLen, header);
 }
 
 bool UbloxModemHttp::post(const char * path, const char * contentType, const uint8_t * sendBuffer, size_t sendLen, 
@@ -87,8 +81,28 @@ bool UbloxModemHttp::post(const char * path, const char * contentType, const uin
         return false;
     }
 
-    _httpResultAvailable = false;
     _modem->sendATCommand(F("AT+UHTTPC="), DEFAULT_HTTP_PROFILE,",4,\"", path, "\",\"", READ_TEMP_FILE, "\",\"", WRITE_TEMP_FILE, "\",", 6, ",\"", contentType, "\"");
+
+    return _endRequest(receiveBuffer, receiveLen, header);    
+}
+
+bool UbloxModemHttp::post(const char * path, const char * contentType, Stream * stream, const size_t size,
+                        uint8_t * receiveBuffer, const size_t receiveLen, CellModemHttpHeader_t * header) {
+    if(!_initWriteTempFile(WRITE_TEMP_FILE, size)) return false;
+
+    uint32_t filesize = _filesystem->getMaxFileSize();
+
+    if(!_filesystem->writeFile(WRITE_TEMP_FILE, stream, size < filesize ? size : filesize)) {
+        return false;
+    }
+
+    _modem->sendATCommand(F("AT+UHTTPC="), DEFAULT_HTTP_PROFILE,",4,\"", path, "\",\"", READ_TEMP_FILE, "\",\"", WRITE_TEMP_FILE, "\",", 6, ",\"", contentType, "\"");
+
+    return _endRequest(receiveBuffer, receiveLen, header);
+}
+
+bool UbloxModemHttp::_endRequest(uint8_t * receiveBuffer, const size_t receiveLen, CellModemHttpHeader_t * header) {
+    _httpResultAvailable = false;
     
 
     if(_modem->readResponse() != ATResponse::ResponseOK) {
@@ -101,14 +115,7 @@ bool UbloxModemHttp::post(const char * path, const char * contentType, const uin
     }
 
     return _waitHttpResponse(receiveBuffer, receiveLen, header);
-}
 
-bool UbloxModemHttp::post(const char * path, const char * contentType, Stream * stream, const size_t size) {
-    if(!_initWriteTempFile(WRITE_TEMP_FILE, size)) return false;
-
-    uint32_t filesize = _filesystem->getMaxFileSize();
-
-    return _filesystem->writeFile(WRITE_TEMP_FILE, stream, size < filesize ? size : filesize);
 }
 
 bool UbloxModemHttp::_initWriteTempFile(const char * buffer, const size_t size) {

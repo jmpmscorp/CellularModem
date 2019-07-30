@@ -103,7 +103,7 @@ class CellModem {
         void sendATCommand(Args... cmd) {
             sendData(cmd...);
             _serial->println();
-            _serial->flush();
+            //_serial->flush();            
         }
 
         ATResponse readResponse(char* buffer, size_t size, size_t* outSize, uint32_t timeout = CELLMODEM_DEFAULT_TIMEOUT_MS)

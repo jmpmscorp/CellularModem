@@ -10,7 +10,8 @@ enum class ATResponse : uint8_t {
     ResponsePrompt,
     ResponseTimeout,
     ResponseEmpty,
-    ResponseMultilineParser
+    ResponseMultilineParser,
+    UrcHandled
 };
 
 enum class NetworkRegistrationStatus : uint8_t {

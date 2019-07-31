@@ -53,6 +53,11 @@
             typedef CellModemPhonebook CellularModemPhonebook;
         #endif
 
+        #ifdef CELLMODEM_USE_FTP
+            #pragma message ("Using FTP Functionality");
+            #include "sim800/Sim800ModemFtp.h"
+            typedef Sim800ModemFtp CellularModemFtp;
+        #endif
     #else
         #error "Cellular Modem Error. You should define CELLMODEM_MODEL"
     #endif

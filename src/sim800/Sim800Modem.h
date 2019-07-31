@@ -5,14 +5,21 @@
 
 #include "../CellModem.h"
 
+#define DEFAULT_BEARER_ID   1
+
 class Sim800Modem : public CellModem, public CellModemUrcHandler{
     public:
         Sim800Modem(Stream &stream, int8_t onOffPin, int8_t statusPin ,int8_t dtrPin, int8_t ctsPin);
         ~Sim800Modem();
 
-        bool on();
-        bool enableDatetimeNetworkSync();
-        bool disableDatetimeNetworkSync();
+        virtual bool attachGPRS(const char * apn, const char * username, const char * password);
+        virtual bool detachGRPS();
+        virtual bool isGPRSConnected();
+
+
+        virtual bool on();
+        virtual bool enableDatetimeNetworkSync();
+        virtual bool disableDatetimeNetworkSync();
 
         ATResponse handleUrcs();
 
@@ -23,8 +30,9 @@ class Sim800Modem : public CellModem, public CellModemUrcHandler{
         bool _setCLTS(uint8_t mode);
         int8_t _getCLTS();
         bool _initializationProcess();
-        static ATResponse _cltsParser(ATResponse &response, const char * buffer, size_t size, unsigned int * mode, uint8_t * dummy);
 
+        static ATResponse _cltsParser(ATResponse &response, const char * buffer, size_t size, unsigned int * mode, uint8_t * dummy);
+        static ATResponse _sapbrParser(ATResponse &response, const char * buffer, size_t size, unsigned int * status, char * ip);
 };
 
 

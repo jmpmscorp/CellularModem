@@ -72,6 +72,15 @@ bool CellModem::on() {
     }    
 }
 
+bool CellModem::off() {
+    if(_onOffPin > 0) {
+        digitalWrite(_onOffPin, LOW);
+        _modemDelay(1000);
+    }
+
+    return true;
+}
+
 bool CellModem::forceReset() {
     if(_onOffPin > -1) {
         digitalWrite(_onOffPin, HIGH);

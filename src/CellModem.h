@@ -52,6 +52,7 @@ class CellModem {
         virtual bool on();
         virtual bool isOn() const;
         virtual bool off() { return true; }
+        virtual bool softwareOff() = 0;
         
         virtual bool forceReset();
         virtual bool reset();

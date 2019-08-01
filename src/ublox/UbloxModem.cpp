@@ -12,6 +12,16 @@ UbloxModem::UbloxModem(Stream &serial, int8_t onOffPin, int8_t statusPin, int8_t
 UbloxModem::~UbloxModem(){}
 
 
+bool UbloxModem::softwareOff() {
+    sendATCommand(F("AT+CPWROFF"));
+
+    if(readResponse(nullptr, 45000) == ATResponse::ResponseOK) {
+        return off();
+    }
+
+    return false;
+}
+
 bool UbloxModem::_initializationProcess() {
     sendATCommand(F("AT+CMEE=2"));
 

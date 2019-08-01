@@ -13,6 +13,8 @@ class UbloxModem : public CellModem {
         UbloxModem(Stream &stream, int8_t onOffPin, int8_t statusPin ,int8_t dtrPin, int8_t ctsPin);
         ~UbloxModem();
 
+        virtual bool softwareOff();
+
         virtual bool attachGPRS(const char * apn, const char * username, const char * password);
         virtual bool detachGRPS();
         virtual bool isGPRSConnected();

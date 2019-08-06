@@ -7,6 +7,7 @@
   #define MODEM_DTR_PIN     -1
   #define MODEM_CTS_PIN     -1
   #define MODEM_ON_OFF_PIN  BEEDTR
+  #define MODEM_RESET_PIN   -1
   #define MODEM_STATUS_PIN  BEECTS
 
   #define debugSerial       Serial
@@ -18,7 +19,7 @@
 
 #define MAX_INDEX_LIST  30
 
-CellularModem modem(modemSerial, MODEM_ON_OFF_PIN, MODEM_STATUS_PIN, MODEM_DTR_PIN, MODEM_CTS_PIN); 
+CellularModem modem(modemSerial, MODEM_ON_OFF_PIN, MODEM_RESET_PIN, MODEM_STATUS_PIN, MODEM_DTR_PIN, MODEM_CTS_PIN); 
 CellularModemSMS sms(modem);
 
 char phoneNumber[20] = "";

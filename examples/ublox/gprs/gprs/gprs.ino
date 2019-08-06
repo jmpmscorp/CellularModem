@@ -8,7 +8,8 @@
   #define modemSerial       SerialGSM
   #define MODEM_DTR_PIN     GSM_DTR
   #define MODEM_CST_PIN     -1
-  #define MODEM_ON_OFF_PIN  GSM_RESETN
+  #define MODEM_ON_OFF_PIN  -1
+  #define MODEM_RESET_PIN   GSM_RESETN  
   #define MODEM_STATUS_PIN  -1
 
   #define debugSerial       Serial
@@ -18,7 +19,7 @@
 
 
 
-CellularModem modem(modemSerial, MODEM_ON_OFF_PIN, MODEM_STATUS_PIN, MODEM_DTR_PIN, MODEM_CST_PIN); 
+CellularModem modem(modemSerial, MODEM_ON_OFF_PIN, MODEM_RESET_PIN, MODEM_STATUS_PIN, MODEM_DTR_PIN, MODEM_CST_PIN); 
 CellularModemClient client(modem);
 
 const char * server = "antaresserver.dynu.net";

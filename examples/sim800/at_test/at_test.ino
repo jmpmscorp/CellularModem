@@ -1,8 +1,22 @@
 #define CELLMODEM_MODEL SIM800
 #include "CellularModem.h"
 
-CellularModem modem(Serial1, BEEDTR, BEECTS, -1, -1); 
-//CellularModem modem(Serial, -1, -1, -1, -1);
+#if defined(ARDUINO_AVR_SODAQ_MBILI)
+  #define modemSerial       Serial1
+  #define MODEM_DTR_PIN     -1
+  #define MODEM_CTS_PIN     -1
+  #define MODEM_ON_OFF_PIN  BEEDTR
+  #define MODEM_RESET_PIN   -1
+  #define MODEM_STATUS_PIN  BEECTS
+
+  #define debugSerial       Serial
+  #define SERIAL_BAUDRATE   19200 
+#else
+  #warning "User should define his own pins"
+#endif
+
+CellularModem modem(modemSerial, MODEM_ON_OFF_PIN, MODEM_RESET_PIN, MODEM_STATUS_PIN, MODEM_DTR_PIN, MODEM_CTS_PIN); 
+
 
 void setup() {
   // put your setup code here, to run once:

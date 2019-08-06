@@ -1,124 +1,12 @@
 #include "Sim800Modem.h"
 
-
-Sim800Modem::Sim800Modem(Stream &serial, int8_t onOffPin, int8_t statusPin, int8_t dtrPin, int8_t ctsPin) 
-    : CellModem(serial, onOffPin, statusPin, dtrPin, ctsPin) 
+Sim800Modem::Sim800Modem(Stream &serial, int8_t onOffPin, int8_t resetPin, int8_t statusPin, int8_t dtrPin, int8_t ctsPin) 
+    : CellModem(serial, onOffPin, resetPin, statusPin, dtrPin, ctsPin) 
 {
 }
 
 Sim800Modem::~Sim800Modem() {}
 
-bool Sim800Modem::on() {
-
-    if(isAlive(200)) {
-        return true;
-    }
-
-    if(!isOn()) {
-        if(_onOffPin > -1) {
-            digitalWrite(_onOffPin, LOW);
-            _modemDelay(100);
-            digitalWrite(_onOffPin, HIGH);
-        }
-
-        if(_dtrPin > -1) {
-            digitalWrite(_dtrPin, LOW);
-            _modemDelay(100);
-        }
-
-        _onOffStatus = true;
-    }
-    
-    bool timeout = true;
-    
-    for (uint8_t i = 0; i < 10; i++) {
-        if (isAlive(500)) {
-            timeout = false;
-            break;
-        }
-    }
-
-    if (timeout) {
-        return false;
-    }    
-}
-
-bool Sim800Modem::attachGPRS(const char * apn, const char * username, const char * password) {
-    if(apn == nullptr) {
-        return false;
-    }
-
-    if(isGPRSConnected()) {
-        if(!detachGRPS()) {
-            return false;
-        }
-    }
-
-    sendATCommand(F("AT+SAPBR=3,"), DEFAULT_BEARER_ID, ",\"APN\",\"", apn, '"');
-
-    if(readResponse() != ATResponse::ResponseOK) {
-        return false;
-    }
-
-    if(username != nullptr && strlen(username) > 0) {
-        sendATCommand(F("AT+SAPBR=3,"), DEFAULT_BEARER_ID, ",\"USER\",\"", username, '"');
-
-        if(readResponse() != ATResponse::ResponseOK) {
-            return false;
-        }
-    }
-
-    if(password != nullptr && strlen(password) > 0) {
-        sendATCommand(F("AT+SAPBR=3,"), DEFAULT_BEARER_ID, ",\"PWD\",\"", password, '"');
-
-        if(readResponse() != ATResponse::ResponseOK) {
-            return false;
-        }
-    }
-
-    sendATCommand(F("AT+SAPBR=1,"), DEFAULT_BEARER_ID);
-
-    if(readResponse(nullptr, 85000) == ATResponse::ResponseOK) {
-        return true;
-    }
-
-    return false;
-    
-}
-
-bool Sim800Modem::detachGRPS() {
-    sendATCommand(F("AT+SAPBR=0,"), DEFAULT_BEARER_ID);
-
-    if(readResponse(nullptr, 65000) == ATResponse::ResponseOK) {
-        return true;
-    }
-
-    return false;
-}
-
-bool Sim800Modem::isGPRSConnected() {
-    sendATCommand(F("AT+SAPBR=2,"), DEFAULT_BEARER_ID);
-
-    unsigned int status = 0;
-
-    if(readResponse<unsigned int, char>(_sapbrParser, &status, nullptr) == ATResponse::ResponseOK) {
-        if(status == 1) {
-            return true;
-        }
-    }
-
-    return false;
-}
-
-ATResponse Sim800Modem::_sapbrParser(ATResponse &response, const char * buffer, size_t size, unsigned int * status, char * ip) {
-    if(status == nullptr && ip == nullptr) return ATResponse::ResponseError;
-
-    if(sscanf_P(buffer, PSTR("+SAPBR: %*d,%d"), status) == 1) {
-        return ATResponse::ResponseEmpty;
-    }
-
-    return ATResponse::ResponseError;
-}
 
 bool Sim800Modem::enableDatetimeNetworkSync() {
     if(_getCLTS() == 1) {

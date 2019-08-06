@@ -1,8 +1,24 @@
 #define CELLMODEM_MODEL UBLOX
 #include "CellularModem.h"
 
-CellularModem modem(Serial1, BEEDTR, BEECTS, -1, -1); 
-//CellularModem modem(Serial, -1, -1, -1, -1);
+
+#ifdef ARDUINO_SAMD_MKRGSM1400
+  #define modemSerial       SerialGSM
+  #define MODEM_DTR_PIN     GSM_DTR
+  #define MODEM_CST_PIN     -1
+  #define MODEM_ON_OFF_PIN  -1
+  #define MODEM_RESET_PIN   GSM_RESETN  
+  #define MODEM_STATUS_PIN  -1
+
+  #define debugSerial       Serial
+#else
+  #warning "User should define his own pins"
+#endif
+
+
+
+CellularModem modem(modemSerial, MODEM_ON_OFF_PIN, MODEM_RESET_PIN, MODEM_STATUS_PIN, MODEM_DTR_PIN, MODEM_CST_PIN); 
+
 
 void setup() {
   // put your setup code here, to run once:

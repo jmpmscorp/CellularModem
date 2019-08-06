@@ -1,8 +1,9 @@
 #include "CellModem.h"
 
-CellModem::CellModem(Stream &serial, int8_t onOffPin, int8_t statusPin, int8_t dtrPin, int8_t ctsPin) :
+CellModem::CellModem(Stream &serial, int8_t onOffPin, int8_t resetPin, int8_t statusPin, int8_t dtrPin, int8_t ctsPin) :
     _serial(&serial),
     _onOffPin(onOffPin),
+    _resetPin(resetPin),
     _statusPin(statusPin),
     _dtrPin(dtrPin),
     _ctsPin(ctsPin)    
@@ -12,18 +13,26 @@ CellModem::CellModem(Stream &serial, int8_t onOffPin, int8_t statusPin, int8_t d
 void CellModem::init() {
     if(_onOffPin > -1) {
         pinMode(_onOffPin, OUTPUT);
+        digitalWrite(_onOffPin, LOW);
+    }
+
+    if(_resetPin > -1) {
+        pinMode(_resetPin, OUTPUT);
+        digitalWrite(_resetPin, LOW);
     }
 
     if(_statusPin > -1) {
-        pinMode(_statusPin, INPUT);
+        pinMode(_statusPin, INPUT_PULLUP);
     }
-
+    
+    
     if(_dtrPin > -1) {
         pinMode(_dtrPin, OUTPUT);
+        digitalWrite(_dtrPin, LOW);
     }
 
     if(_ctsPin > -1) {
-        pinMode(_ctsPin, INPUT);
+        pinMode(_ctsPin, INPUT_PULLUP);
     }
 
     _initResponseBuffer();
@@ -46,13 +55,6 @@ bool CellModem::on() {
     if(!isOn()) {
         if(_onOffPin > -1) {
             digitalWrite(_onOffPin, HIGH);
-            _modemDelay(100);
-            digitalWrite(_onOffPin, LOW);
-        }
-
-        if(_dtrPin > -1) {
-            digitalWrite(_dtrPin, LOW);
-            _modemDelay(100);
         }
 
         _onOffStatus = true;
@@ -72,11 +74,25 @@ bool CellModem::on() {
     }    
 }
 
-bool CellModem::forceReset() {
-    if(_onOffPin > -1) {
-        digitalWrite(_onOffPin, HIGH);
-        _modemDelay(250);
+bool CellModem::off() {
+    if(_onOffPin > 0) {
         digitalWrite(_onOffPin, LOW);
+        _modemDelay(1000);
+    }
+
+    return true;
+}
+
+bool CellModem::forceReset() {
+    if(_resetPin > -1) {
+        digitalWrite(_resetPin, HIGH);
+        _modemDelay(250);
+        digitalWrite(_resetPin, LOW);
+    }
+    else if(_onOffPin > -1) {
+        digitalWrite(_onOffPin, LOW);
+        _modemDelay(250);
+        digitalWrite(_onOffPin, HIGH);
     }
 
     bool timeout = true;

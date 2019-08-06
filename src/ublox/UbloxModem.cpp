@@ -3,14 +3,24 @@
 
 #define DEFAULT_GPRS_PROFILE    0
 
-UbloxModem::UbloxModem(Stream &serial, int8_t onOffPin, int8_t statusPin, int8_t dtrPin, int8_t ctsPin) 
-    : CellModem(serial, onOffPin, statusPin, dtrPin, ctsPin)
+UbloxModem::UbloxModem(Stream &serial, int8_t onOffPin, int8_t resetPin, int8_t statusPin, int8_t dtrPin, int8_t ctsPin) 
+    : CellModem(serial, onOffPin, resetPin, statusPin, dtrPin, ctsPin)
 {
 
 }
 
 UbloxModem::~UbloxModem(){}
 
+
+bool UbloxModem::softwareOff() {
+    sendATCommand(F("AT+CPWROFF"));
+
+    if(readResponse(nullptr, 45000) == ATResponse::ResponseOK) {
+        return off();
+    }
+
+    return false;
+}
 
 bool UbloxModem::_initializationProcess() {
     sendATCommand(F("AT+CMEE=2"));

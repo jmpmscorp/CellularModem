@@ -45,13 +45,14 @@ class CellModem {
     friend class CellModemSMS;
     public:
         
-        CellModem(Stream &serial, int8_t onOffPin, int8_t statusPin, int8_t dtrPin, int8_t ctsPin);
+        CellModem(Stream &serial, int8_t onOffPin, int8_t resetPin, int8_t statusPin, int8_t dtrPin, int8_t ctsPin);
 
         virtual void init();
 
         virtual bool on();
         virtual bool isOn() const;
-        virtual bool off() { return true; }
+        virtual bool off();
+        virtual bool softwareOff() = 0;
         
         virtual bool forceReset();
         virtual bool reset();
@@ -163,6 +164,7 @@ class CellModem {
         int8_t _dtrPin = -1;
         int8_t _ctsPin = -1;
         int8_t _onOffPin = -1;
+        int8_t _resetPin = -1;
         int8_t _statusPin = -1;
 
         int8_t _minRSSI = -93;

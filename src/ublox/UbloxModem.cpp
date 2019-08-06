@@ -3,8 +3,8 @@
 
 #define DEFAULT_GPRS_PROFILE    0
 
-UbloxModem::UbloxModem(Stream &serial, int8_t onOffPin, int8_t resetPin, int8_t statusPin, int8_t dtrPin, int8_t ctsPin) 
-    : CellModem(serial, onOffPin, resetPin, statusPin, dtrPin, ctsPin)
+UbloxModem::UbloxModem(Stream &serial, int8_t onOffPin, int8_t resetPin, int8_t statusPin) 
+    : CellModem(serial, onOffPin, resetPin, statusPin)
 {
 
 }
@@ -37,6 +37,31 @@ bool UbloxModem::_initializationProcess() {
     return true;
 }
 
+bool UbloxModem::setLowPowerMode(uint8_t mode) {
+    sendATCommand(F("AT+UPSV="), mode);
+
+    if(readResponse() == ATResponse::ResponseOK) {
+        _lowPowerMode = mode;
+        return true;
+    }
+
+    return false;
+}
+
+bool UbloxModem::enableLowPowerMode() {
+    switch (_lowPowerMode)
+    {
+        case 2:
+            break;
+        
+        default:
+            break;
+    }
+}
+        
+bool UbloxModem::disableLowPowerMode() {
+
+}
 
 bool UbloxModem::attachGPRS(const char * apn, const char * username, const char * password) {
     if(!apn) {

@@ -15,7 +15,7 @@
   #warning "User should define his own pins"
 #endif
 
-CellularModem modem(modemSerial, MODEM_ON_OFF_PIN, MODEM_RESET_PIN, MODEM_STATUS_PIN, MODEM_DTR_PIN, MODEM_CTS_PIN); 
+CellularModem modem(modemSerial, MODEM_ON_OFF_PIN, MODEM_RESET_PIN, MODEM_STATUS_PIN); 
 
 
 void setup() {

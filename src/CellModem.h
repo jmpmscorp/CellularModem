@@ -45,7 +45,7 @@ class CellModem {
     friend class CellModemSMS;
     public:
         
-        CellModem(Stream &serial, int8_t onOffPin, int8_t resetPin, int8_t statusPin, int8_t dtrPin, int8_t ctsPin);
+        CellModem(Stream &serial, int8_t onOffPin, int8_t resetPin, int8_t statusPin);
 
         virtual void init();
 
@@ -54,8 +54,15 @@ class CellModem {
         virtual bool off();
         virtual bool softwareOff() = 0;
         
+        void setUartPins(UartPins_t uartPins);
+        UartPins_t getUartPins() const;
+        
         virtual bool forceReset();
         virtual bool reset();
+
+        virtual bool setLowPowerMode(uint8_t mode) = 0;
+        virtual bool enableLowPowerMode() = 0;
+        virtual bool disableLowPowerMode() = 0;
 
         virtual bool networkOn(bool enableAutoregistration = true);
         virtual bool networkOn(const char * pin, bool enableAutoregistration = true);
@@ -102,6 +109,10 @@ class CellModem {
 
         template<typename... Args>
         void sendATCommand(Args... cmd) {
+            if(_lowPowerMode > 0) {
+                disableLowPowerMode();
+            }
+
             sendData(cmd...);
             _serial->println();
             //_serial->flush();            
@@ -161,13 +172,14 @@ class CellModem {
         char * _responseBuffer;
         
         Stream * _serial;
-        int8_t _dtrPin = -1;
-        int8_t _ctsPin = -1;
         int8_t _onOffPin = -1;
         int8_t _resetPin = -1;
         int8_t _statusPin = -1;
 
+        UartPins_t _uartPins = { -1, -1, -1, -1, -1};
+
         int8_t _minRSSI = -93;
+        uint8_t _lowPowerMode = 0;
         bool _onOffStatus = false;
     
     private:

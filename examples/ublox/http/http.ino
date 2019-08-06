@@ -18,7 +18,7 @@
 
 
 
-CellularModem modem(modemSerial, MODEM_ON_OFF_PIN, MODEM_RESET_PIN, MODEM_STATUS_PIN, MODEM_DTR_PIN, MODEM_CST_PIN); 
+CellularModem modem(modemSerial, MODEM_ON_OFF_PIN, MODEM_RESET_PIN, MODEM_STATUS_PIN); 
 
 #if CELLMODEM_MODEL == UBLOX
   CellularModemFilesystem filesystem(modem);

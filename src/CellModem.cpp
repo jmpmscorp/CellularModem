@@ -1,12 +1,10 @@
 #include "CellModem.h"
 
-CellModem::CellModem(Stream &serial, int8_t onOffPin, int8_t resetPin, int8_t statusPin, int8_t dtrPin, int8_t ctsPin) :
+CellModem::CellModem(Stream &serial, int8_t onOffPin, int8_t resetPin, int8_t statusPin) :
     _serial(&serial),
     _onOffPin(onOffPin),
     _resetPin(resetPin),
-    _statusPin(statusPin),
-    _dtrPin(dtrPin),
-    _ctsPin(ctsPin)    
+    _statusPin(statusPin) 
 {
 }
 
@@ -23,16 +21,6 @@ void CellModem::init() {
 
     if(_statusPin > -1) {
         pinMode(_statusPin, INPUT_PULLUP);
-    }
-    
-    
-    if(_dtrPin > -1) {
-        pinMode(_dtrPin, OUTPUT);
-        digitalWrite(_dtrPin, LOW);
-    }
-
-    if(_ctsPin > -1) {
-        pinMode(_ctsPin, INPUT_PULLUP);
     }
 
     _initResponseBuffer();
@@ -124,6 +112,38 @@ bool CellModem::reset() {
     return readResponse() == ATResponse::ResponseOK;
 }
 
+
+void CellModem::setUartPins(UartPins_t uartPins) {
+    _uartPins.dtr = uartPins.dtr;
+    _uartPins.dcd = uartPins.dcd;
+    _uartPins.cts = uartPins.cts;
+    _uartPins.rts = uartPins.rts;
+    _uartPins.ri = uartPins.ri;
+
+    if(_uartPins.dtr > -1 ) {
+        pinMode(_uartPins.dtr, OUTPUT);
+    }
+
+    if(_uartPins.dcd > -1) {
+        pinMode(_uartPins.dcd, INPUT_PULLUP);
+    }
+
+    if(_uartPins.cts > -1) {
+        pinMode(_uartPins.cts, INPUT_PULLUP);
+    }
+
+    if(_uartPins.rts > -1) {
+        pinMode(_uartPins.rts, OUTPUT);
+    }
+
+    if(_uartPins.ri > -1) {
+        pinMode(_uartPins.ri, INPUT_PULLUP);
+    }
+}
+
+UartPins_t CellModem::getUartPins() const {
+    return _uartPins;
+}
 
 /*******************************************************************
  * **************   NETWORK FUNCTIONS ******************************

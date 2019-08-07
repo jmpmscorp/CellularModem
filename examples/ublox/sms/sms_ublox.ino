@@ -17,7 +17,7 @@
 
 #define MAX_INDEX_LIST  30
 
-CellularModem modem(modemSerial, MODEM_ON_OFF_PIN, MODEM_RESET_PIN, MODEM_STATUS_PIN, MODEM_DTR_PIN, MODEM_CST_PIN); 
+CellularModem modem(modemSerial, MODEM_ON_OFF_PIN, MODEM_RESET_PIN, MODEM_STATUS_PIN); 
 CellularModemSMS sms(modem);
 
 char phoneNumber[20] = "";

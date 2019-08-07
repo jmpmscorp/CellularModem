@@ -1,5 +1,0 @@
-{
-    "board": "SODAQ:avr:sodaq_mbili",
-    "port": "COM7",
-    "sketch": "at_test.ino"
-}

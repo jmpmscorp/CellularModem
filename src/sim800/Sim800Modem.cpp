@@ -1,7 +1,7 @@
 #include "Sim800Modem.h"
 
-Sim800Modem::Sim800Modem(Stream &serial, int8_t onOffPin, int8_t resetPin, int8_t statusPin, int8_t dtrPin, int8_t ctsPin) 
-    : CellModem(serial, onOffPin, resetPin, statusPin, dtrPin, ctsPin) 
+Sim800Modem::Sim800Modem(Stream &serial, int8_t onOffPin, int8_t resetPin, int8_t statusPin) 
+    : CellModem(serial, onOffPin, resetPin, statusPin) 
 {
 }
 

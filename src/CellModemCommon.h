@@ -53,6 +53,14 @@ typedef struct SafeCharBufferPtr
 }SafeCharBufferPtr_t;
 
 
+typedef struct {
+    int8_t dtr;
+    int8_t dcd;
+    int8_t cts;
+    int8_t rts;
+    int8_t ri;
+}UartPins_t;
+
 static inline bool isTimedout(uint32_t from, uint32_t nr_ms) __attribute__((always_inline));
 static inline bool isTimedout(uint32_t from, uint32_t nr_ms)
 {

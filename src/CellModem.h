@@ -178,7 +178,7 @@ class CellModem {
 
         UartPins_t _uartPins = { -1, -1, -1, -1, -1};
 
-        int8_t _minRSSI = -93;
+        int8_t _minRSSI = -100;
         uint8_t _lowPowerMode = 0;
         bool _onOffStatus = false;
     

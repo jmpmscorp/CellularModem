@@ -38,6 +38,10 @@ bool UbloxModem::_initializationProcess() {
 }
 
 bool UbloxModem::setLowPowerMode(uint8_t mode) {
+    if(mode < 0 || mode > 3) {
+        return false;
+    }
+    
     sendATCommand(F("AT+UPSV="), mode);
 
     if(readResponse() == ATResponse::ResponseOK) {
@@ -52,15 +56,56 @@ bool UbloxModem::enableLowPowerMode() {
     switch (_lowPowerMode)
     {
         case 2:
+            if(_uartPins.rts > -1) {
+                digitalWrite(_uartPins.rts, HIGH);
+                return true;
+            } else {
+                return false;
+            }
+
             break;
+        
+        case 3:
+            if(_uartPins.dtr > -1) {
+                digitalWrite(_uartPins.dtr, HIGH);
+                return true;
+            } else {
+                return false;
+            }
         
         default:
             break;
     }
+
+    return true;
 }
         
 bool UbloxModem::disableLowPowerMode() {
+    switch (_lowPowerMode)
+    {
+        case 2:
+            if(_uartPins.rts > -1) {
+                digitalWrite(_uartPins.rts, LOW);
+                return true;
+            } else {
+                return false;
+            }
 
+            break;
+        
+        case 3:
+            if(_uartPins.dtr > -1) {
+                digitalWrite(_uartPins.dtr, LOW);
+                return true;
+            } else {
+                return false;
+            }
+        
+        default:
+            break;
+    }
+
+    return true;
 }
 
 bool UbloxModem::attachGPRS(const char * apn, const char * username, const char * password) {

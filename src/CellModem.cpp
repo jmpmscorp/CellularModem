@@ -114,7 +114,11 @@ bool CellModem::reset() {
 
 
 void CellModem::setUartPins(UartPins_t uartPins) {
-    _uartPins = uartPins;
+    _uartPins.dtr = uartPins.dtr;
+    _uartPins.dcd = uartPins.dcd;
+    _uartPins.cts = uartPins.cts;
+    _uartPins.rts = uartPins.rts;
+    _uartPins.ri = uartPins.ri;
 
     if(_uartPins.dtr > -1 ) {
         pinMode(_uartPins.dtr, OUTPUT);

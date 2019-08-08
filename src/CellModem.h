@@ -63,7 +63,8 @@ class CellModem {
         virtual bool setLowPowerMode(uint8_t mode) = 0;
         virtual bool enableLowPowerMode() = 0;
         virtual bool disableLowPowerMode() = 0;
-
+        uint8_t getActiveLowPowerMode() const;
+        
         virtual bool networkOn(bool enableAutoregistration = true);
         virtual bool networkOn(const char * pin, bool enableAutoregistration = true);
         virtual bool isNetworkRegistered();

@@ -145,6 +145,11 @@ UartPins_t CellModem::getUartPins() const {
     return _uartPins;
 }
 
+
+uint8_t CellModem::getActiveLowPowerMode() const {
+    return _lowPowerMode;
+}
+
 /*******************************************************************
  * **************   NETWORK FUNCTIONS ******************************
  * *****************************************************************/

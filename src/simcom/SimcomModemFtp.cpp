@@ -1,12 +1,12 @@
-#include "Sim800ModemFtp.h"
+#include "SimcomModemFtp.h"
 
-Sim800ModemFtp::Sim800ModemFtp(Sim800Modem &modem) :
+SimcomModemFtp::SimcomModemFtp(SimcomModem &modem) :
     CellModemFtp(modem)
 {
     _modem->addUrcHandler(this);
 }
 
-bool Sim800ModemFtp::init(const char * server, const char * username, const char * password) {
+bool SimcomModemFtp::init(const char * server, const char * username, const char * password) {
     if(server == nullptr || strlen(server) <= 0) return false;
 
     _modem->sendATCommand(F("AT+FTPCID="), DEFAULT_BEARER_ID);
@@ -40,7 +40,7 @@ bool Sim800ModemFtp::init(const char * server, const char * username, const char
     return true;
 }
 
-bool Sim800ModemFtp::_initFtpTransaction(const char * path, const char * filename) {
+bool SimcomModemFtp::_initFtpTransaction(const char * path, const char * filename) {
     if(filename == nullptr || strlen(filename) <= 0) return false;
 
     _modem->sendATCommand(F("AT+FTPPUTNAME=\""), filename, '"');
@@ -63,18 +63,26 @@ bool Sim800ModemFtp::_initFtpTransaction(const char * path, const char * filenam
         return false;
     }
 
-    return _waitFtpPutUrc();
+    if(!_waitFtpPutUrc()) return false;
+
+    if(_transactionError != 1) return false;
+
+    return true;
 }
 
-bool Sim800ModemFtp::_endFtpTransaction() {
+bool SimcomModemFtp::_endFtpTransaction() {
     _modem->sendATCommand(F("AT+FTPPUT=2,0"));
 
     if(_modem->readResponse() != ATResponse::ResponseOK) return false;
 
-    return _waitFtpPutUrc();
+    if(!_waitFtpPutUrc()) return false;
+
+    if(_transactionError != 0) return false;
+
+    return true;
 }
 
-bool Sim800ModemFtp::send(const char * path, const char * filename, const uint8_t * buffer, size_t size) {
+bool SimcomModemFtp::send(const char * path, const char * filename, const uint8_t * buffer, size_t size) {
     if(!_initFtpTransaction(path, filename)) return false;
 
     size_t bytesSent = 0;
@@ -84,27 +92,31 @@ bool Sim800ModemFtp::send(const char * path, const char * filename, const uint8_
         size_t remainingBytes = size - bytesSent;
 
         success = _sendChunk(buffer + bytesSent, _transactionLength > remainingBytes ? remainingBytes : _transactionLength, &bytesSent);
+
+        if(_transactionError != 1) return false;
     }
 
     return _endFtpTransaction();
 }
 
-bool Sim800ModemFtp::send(const char * path, const char * filename, Stream &stream, size_t size) {
+bool SimcomModemFtp::send(const char * path, const char * filename, Stream &stream, size_t size) {
     if(!_initFtpTransaction(path, filename)) return false;
 
     size_t bytesSent = 0;
     bool success = true;
-    Serial.println(size);
+    
     while(success && bytesSent < size) {
         size_t remainingBytes = size - bytesSent;
 
         success = _sendChunk(stream, _transactionLength > remainingBytes ? remainingBytes : _transactionLength, &bytesSent);
+
+        if(_transactionError != 1) return false;
     }
 
     return _endFtpTransaction();
 }
 
-bool Sim800ModemFtp::_sendChunk(const uint8_t * buffer, size_t sizeToSend, size_t * bytesSent) {
+bool SimcomModemFtp::_sendChunk(const uint8_t * buffer, size_t sizeToSend, size_t * bytesSent) {
     _modem->sendATCommand(F("AT+FTPPUT=2,"), sizeToSend);
 
     if(!_waitFtpPutUrc()) return false;
@@ -119,7 +131,7 @@ bool Sim800ModemFtp::_sendChunk(const uint8_t * buffer, size_t sizeToSend, size_
     return _waitFtpPutUrc();
 }
 
-bool Sim800ModemFtp::_sendChunk(Stream &stream, size_t sizeToSend, size_t * bytesSent) {
+bool SimcomModemFtp::_sendChunk(Stream &stream, size_t sizeToSend, size_t * bytesSent) {
     _modem->sendATCommand(F("AT+FTPPUT=2,"), sizeToSend);
 
     if(!_waitFtpPutUrc()) return false;
@@ -136,7 +148,7 @@ bool Sim800ModemFtp::_sendChunk(Stream &stream, size_t sizeToSend, size_t * byte
     return _waitFtpPutUrc();
 }
 
-bool Sim800ModemFtp::_waitFtpPutUrc(uint16_t timeout) {
+bool SimcomModemFtp::_waitFtpPutUrc(uint16_t timeout) {
     _ftpPutUrcReceived = false;
     unsigned long start = millis();
 
@@ -148,11 +160,11 @@ bool Sim800ModemFtp::_waitFtpPutUrc(uint16_t timeout) {
 }
 
 
-uint8_t Sim800ModemFtp::getLastTransactionError() const {
+uint8_t SimcomModemFtp::getLastTransactionError() const {
     return _transactionError;
 }
 
-ATResponse Sim800ModemFtp::handleUrcs() {
+ATResponse SimcomModemFtp::handleUrcs() {
     // Posible responses are:
     // +FTPPUT: 1, <error>
     // +FTPPUT: 1,1,<maxlenght>
@@ -167,7 +179,7 @@ ATResponse Sim800ModemFtp::handleUrcs() {
 
         uint8_t mode = strtoul(ptr, &ptr, 10);
         
-        if(mode < 1 || mode > 2) return ATResponse::ResponseError;
+        if(mode < 1 || mode > 2) return ATResponse::UrcHandled;
 
         if(*ptr == ',') ++ptr;
 
@@ -176,13 +188,14 @@ ATResponse Sim800ModemFtp::handleUrcs() {
         if(mode == 1) {
             _transactionError = static_cast<uint8_t>(aux);
             
-            if(aux != 1) {
-                return ATResponse::ResponseError;
+            if(aux == 0) {
+                return ATResponse::UrcHandled;
+            } else if(aux == 1) {
+                if(*ptr == ',') ++ptr;
+                _transactionLength = strtoul(ptr, &ptr, 10);
+            } else {
+                return ATResponse::UrcHandled;
             }
-
-            if(*ptr == ',') ++ptr;
-            _transactionLength = strtoul(ptr, &ptr, 10);
-
         } else if(mode == 2) {
             _transactionLength = aux;
         }

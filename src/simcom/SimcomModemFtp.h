@@ -2,11 +2,11 @@
 
 #include "../CellModemFtp.h"
 #include "../CellModemUrcHandler.h"
-#include "Sim800Modem.h"
+#include "SimcomModem.h"
 
-class Sim800ModemFtp : public CellModemFtp, public CellModemUrcHandler {
+class SimcomModemFtp : public CellModemFtp, public CellModemUrcHandler {
     public:
-        Sim800ModemFtp(Sim800Modem &modem);
+        SimcomModemFtp(SimcomModem &modem);
 
         virtual bool init(const char * server, const char * username, const char * password);
         virtual bool send(const char * path, const char * filename, const uint8_t * buffer, size_t size);

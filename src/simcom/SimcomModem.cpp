@@ -175,7 +175,8 @@ bool SimcomModem::_initializationProcess() {
 
     do {
         poll();
-    }while((!_gotSMSReady || !_gotCIEV) && !isTimedout(start, 10000));
+        _modemDelay(1);
+    }while((!_gotSMSReady || !_gotCIEV) && !isTimedout(start, 20000));
 
     _gotCIEV = _gotSMSReady = true;
     removeUrcHandler(this);

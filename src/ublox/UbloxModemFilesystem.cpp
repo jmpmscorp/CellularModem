@@ -52,10 +52,14 @@ bool UbloxModemFilesystem::writeFile(const char * filename, Stream * stream, con
         size_t written = 0;
         unsigned long start = millis();
 
-        while(written < size && !isTimedout(start, 10000)) {
+        while(written < size && !isTimedout(start, 30000)) {
             if(stream->available()) {
                 _modem->getSerial()->write(stream->read());
                 ++written;
+            }
+
+            if(written % 1000 == 0) {
+                _modem->getCustomDelay()(1);
             }
         }
 

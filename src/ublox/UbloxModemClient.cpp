@@ -46,16 +46,16 @@ int UbloxModemClient::socketAvailable(uint8_t socketId) {
 }
 
 ATResponse UbloxModemClient::_usordParser(ATResponse &response, const char * buffer, size_t size, int * len, uint8_t * dummy) {
-    if(!len) return ATResponse::ResponseError;
-    Serial.println("Aqui");
+    if(!len) {
+        return ATResponse::ResponseError;
+    }
+
 
     if(sscanf_P(buffer, PSTR("+USORD: %*d,%d"), len) == 1) {
-        Serial.print("Usord Result: ");
-        Serial.println(*len);
         return ATResponse::ResponseEmpty;
     }
 
-    ATResponse::ResponseError;
+    return ATResponse::ResponseError;
 }
 
 int UbloxModemClient::socketRead(size_t len, uint8_t socketId) {
@@ -91,7 +91,7 @@ ATResponse UbloxModemClient::_usordParser(ATResponse &response, const char * buf
             }
         }
 
-        ATResponse::ResponseEmpty;
+        return ATResponse::ResponseEmpty;
     }
 
     return ATResponse::ResponseError;
@@ -173,7 +173,9 @@ ATResponse UbloxModemClient::handleUrcs() {
         Serial.println("Aqui URC");
         if(_socketId == param1) {
             _socketAvailable = param2;
-            return ATResponse::ResponseEmpty;
+            return ATResponse::UrcHandled;
         }
     }
+
+    return ATResponse::ResponseEmpty;
 }

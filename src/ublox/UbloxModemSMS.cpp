@@ -6,5 +6,5 @@ UbloxModemSMS::UbloxModemSMS(UbloxModem &modem) :
 }
 
 ATResponse UbloxModemSMS::handleUrcs() {
-    CellModemSMS::handleUrcs();    
+    return CellModemSMS::handleUrcs();    
 }

@@ -1,7 +1,7 @@
 {
     "name": "CellularModem",
     "keywords": "ublox, sim800",
-    "description": "Arduino Library for Dallas Temperature ICs (DS18B20, DS18S20, DS1822, DS1820)",
+    "description": "Arduino Library for Simcom and Ublox Modems",
     "repository":
     {
       "type": "git",
@@ -15,7 +15,7 @@
         "maintainer": true
       }
     ],
-    "version": "1.2.0",
+    "version": "1.2.2",
     "frameworks": "arduino",
     "platforms": "*"
   }

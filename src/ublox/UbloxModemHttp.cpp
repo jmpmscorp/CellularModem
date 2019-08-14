@@ -171,7 +171,7 @@ bool UbloxModemHttp::readResponse(CellModemHttpHeader_t * header, char * bodyBuf
         int errorClass, errorCode;
         _modem->sendATCommand(F("AT+UHTTPER="), DEFAULT_HTTP_PROFILE);
 
-        _modem->readResponse<int, int>(_uhttperParser, &errorClass, &errorCode) == ATResponse::ResponseOK;
+        _modem->readResponse<int, int>(_uhttperParser, &errorClass, &errorCode);
         
         _httpError.errorClass = errorClass;
         _httpError.errorCode = errorCode;

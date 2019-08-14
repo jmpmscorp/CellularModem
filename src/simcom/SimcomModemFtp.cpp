@@ -92,7 +92,9 @@ bool SimcomModemFtp::send(const char * path, const char * filename, const uint8_
         size_t remainingBytes = size - bytesSent;
 
         success = _sendChunk(buffer + bytesSent, _transactionLength > remainingBytes ? remainingBytes : _transactionLength, &bytesSent);
-
+        
+        _modem->getCustomDelay()(1);
+        
         if(_transactionError != 1) return false;
     }
 
@@ -109,6 +111,8 @@ bool SimcomModemFtp::send(const char * path, const char * filename, Stream &stre
         size_t remainingBytes = size - bytesSent;
 
         success = _sendChunk(stream, _transactionLength > remainingBytes ? remainingBytes : _transactionLength, &bytesSent);
+
+        _modem->getCustomDelay()(1);
 
         if(_transactionError != 1) return false;
     }
@@ -148,7 +152,7 @@ bool SimcomModemFtp::_sendChunk(Stream &stream, size_t sizeToSend, size_t * byte
     return _waitFtpPutUrc();
 }
 
-bool SimcomModemFtp::_waitFtpPutUrc(uint16_t timeout) {
+bool SimcomModemFtp::_waitFtpPutUrc(uint32_t timeout) {
     _ftpPutUrcReceived = false;
     unsigned long start = millis();
 
@@ -205,4 +209,5 @@ ATResponse SimcomModemFtp::handleUrcs() {
         return ATResponse::UrcHandled;
     }
 
+    return ATResponse::ResponseEmpty;
 }

@@ -1,5 +1,8 @@
 #include "CellModem.h"
 
+#define debugPrintLn(...) { if (this->_debugSerial) this->_debugSerial->println(__VA_ARGS__); }
+#define debugPrint(...) { if (this->_debugSerial) this->_debugSerial->print(__VA_ARGS__); }
+
 CellModem::CellModem(Stream &serial, int8_t onOffPin, int8_t resetPin, int8_t statusPin) :
     _serial(&serial),
     _onOffPin(onOffPin),
@@ -149,6 +152,7 @@ UartPins_t CellModem::getUartPins() const {
 uint8_t CellModem::getActiveLowPowerMode() const {
     return _lowPowerMode;
 }
+
 
 /*******************************************************************
  * **************   NETWORK FUNCTIONS ******************************
@@ -518,9 +522,20 @@ void CellModem::setMinRSSI(int8_t minRSSI) {
     _minRSSI = minRSSI;
 }
 
+
+
+/*******************************************************************
+ * **************   INTERNAL UTILITY FUNCTIONS *********************
+ * *****************************************************************/
+void CellModem::setDebugSerial(Stream &serial) {
+    _debugSerial = &serial;
+}
+
+
 char * CellModem::getResponseBuffer() const {
     return _responseBuffer;
 }
+
 
 
 void CellModem::setCustomDelay(delayFnPtr delayFn) {
@@ -627,7 +642,8 @@ ATResponse CellModem::readResponse(char* buffer, size_t size,
             return response;
         }
 
-        delay(10);
+        _modemDelay(10);
+
     } while (!isTimedout(start, timeout));
 
     if(outSize) {
@@ -647,7 +663,8 @@ int CellModem::readByte(uint32_t timeout) const
     do {
         c = _serial->read();
         if (c >= 0) {
-            Serial.print((char)c);
+            //Serial.print((char)c);
+            debugPrint((char)c);
             return c;
         }
     } while (millis() - _startMillis < timeout);

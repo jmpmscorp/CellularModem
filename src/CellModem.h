@@ -157,14 +157,17 @@ class CellModem {
         size_t readLine(char * buffer, size_t length, uint32_t timeout = 1000);
         
         Stream * getSerial() const { return _serial; };
-
+        
+        void setDebugSerial(Stream &serial);
+        void debug(Printable &msg);
+        void debugLn(Printable &msg);
 
     protected:
         int readByte(uint32_t timeout = 1000) const;
         size_t readBytes(uint8_t * buffer, size_t length, uint32_t timeout = 1000);
         size_t readBytesUntil(char terminator, char * buffer, size_t length, uint32_t timeout = 1000);
         
-        virtual bool _enableAutoregistrationNetwork(uint32_t timeout = 4*60*1000);   // 4 minutes
+        virtual bool _enableAutoregistrationNetwork(uint32_t timeout = (uint32_t)4*60*1000);   // 4 minutes
 
         delayFnPtr _modemDelay = delay;
         unsigned long _lastResponseOrURCMillis;
@@ -173,6 +176,7 @@ class CellModem {
         char * _responseBuffer;
         
         Stream * _serial;
+        Stream * _debugSerial;
         int8_t _onOffPin = -1;
         int8_t _resetPin = -1;
         int8_t _statusPin = -1;
@@ -188,7 +192,7 @@ class CellModem {
 
         virtual bool _initializationProcess();
         virtual int8_t _getAutoregistrationNetworkMode();        
-        virtual bool _waitForSignalQuality(uint32_t timeout = 60 * 1000);  // 60 seconds
+        virtual bool _waitForSignalQuality(uint32_t timeout = 60000);  // 60 seconds
         
 
         bool _isResponseBufferInitialized = false;

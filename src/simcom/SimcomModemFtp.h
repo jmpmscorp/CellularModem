@@ -21,7 +21,7 @@ class SimcomModemFtp : public CellModemFtp, public CellModemUrcHandler {
         bool _endFtpTransaction();
         bool _sendChunk(const uint8_t* buffer, size_t sizeToSend, size_t * bytesSent);
         bool _sendChunk(Stream &stream, size_t sizeToSend, size_t * bytesSent);
-        bool _waitFtpPutUrc(uint16_t timeout = 75000);
+        bool _waitFtpPutUrc(uint32_t timeout = 75000);
 
         uint8_t _transactionError = 1;
         uint16_t _transactionLength = 0;

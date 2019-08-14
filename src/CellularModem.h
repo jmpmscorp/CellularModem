@@ -12,7 +12,7 @@
 #ifndef CELLMODEM_MODEL
     #error "You should define a model to use"
 #else
-    #pragma message ("Cellular Modem Library Version 1.1.0")
+    #pragma message ("Cellular Modem Library Version 1.2.2")
     #if CELLMODEM_MODEL == UBLOX
         #pragma message ("MODEL UBLOX")
         #include "ublox/UbloxModem.h"
@@ -42,19 +42,19 @@
         typedef SimcomModem CellularModem;
 
         #ifdef CELLMODEM_USE_SMS
-            #pragma message ("Using SMS Functionality");
+            #pragma message ("Using SMS Functionality")
             #include "CellModemSMS.h"
             typedef CellModemSMS CellularModemSMS;
         #endif
 
         #ifdef CELLMODEM_USE_PHONEBOOK
-            #pragma message ("Using Phonebook Functionality");
+            #pragma message ("Using Phonebook Functionality")
             #include "CellModemPhonebook.h"
             typedef CellModemPhonebook CellularModemPhonebook;
         #endif
 
         #ifdef CELLMODEM_USE_FTP
-            #pragma message ("Using FTP Functionality");
+            #pragma message ("Using FTP Functionality")
             #include "simcom/SimcomModemFtp.h"
             typedef SimcomModemFtp CellularModemFtp;
         #endif

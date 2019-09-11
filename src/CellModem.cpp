@@ -63,6 +63,8 @@ bool CellModem::on() {
     if (timeout) {
         return false;
     }    
+
+    return true;
 }
 
 bool CellModem::off() {
@@ -98,6 +100,8 @@ bool CellModem::forceReset() {
     if (timeout) {
         return false;
     }    
+
+    return true;
 }
 
 bool CellModem::isOn() const {
@@ -157,9 +161,7 @@ uint8_t CellModem::getActiveLowPowerMode() const {
 /*******************************************************************
  * **************   NETWORK FUNCTIONS ******************************
  * *****************************************************************/
-bool CellModem::isAlive(uint16_t timeout) {
-    unsigned long start = millis();
-    
+bool CellModem::isAlive(uint16_t timeout) {    
     sendATCommand(F("AT"));
 
     if(readResponse(nullptr, 1000) == ATResponse::ResponseOK) {
@@ -573,7 +575,7 @@ void CellModem::removeUrcHandler(CellModemUrcHandler * urcHandler) {
 }
 
 ATResponse CellModem::poll(uint32_t timeout) {
-    readResponse(NULL, timeout);
+    return readResponse(NULL, timeout);
 }
 
 ATResponse CellModem::readResponse(char* buffer, size_t size,
@@ -749,9 +751,9 @@ size_t CellModem::readLine(char* buffer, size_t size, uint32_t timeout) {
 }
 
 size_t CellModem::readLine() {
-    readLine(_responseBuffer, _responseBufferSize);
+    return readLine(_responseBuffer, _responseBufferSize);
 }
 
 size_t CellModem::readLine(uint32_t timeout) {
-    readLine(_responseBuffer, _responseBufferSize, timeout);
+    return readLine(_responseBuffer, _responseBufferSize, timeout);
 }

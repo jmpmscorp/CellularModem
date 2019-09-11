@@ -188,6 +188,8 @@ CellModemClient * UbloxModem::getCellModemClient(uint8_t id) {
     if(id < MAX_CLIENTS_NUMBER - 1) {
         return _clients[id];
     }
+
+    return nullptr;
 }
 
 bool UbloxModem::enableDatetimeNetworkSync() {

@@ -1,8 +1,9 @@
 #include "SocketBuffer.h"
 
 SocketBuffer::SocketBuffer(const size_t size) 
-    :_size(size),
-    _count(0)
+    :
+    _count(0),
+    _size(size)    
 {
     _buffer = (uint8_t*)malloc(size * sizeof(uint8_t));
     _bufferEnd = _buffer + size - 1;

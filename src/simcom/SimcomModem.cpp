@@ -213,7 +213,11 @@ ATResponse SimcomModem::_cltsParser(ATResponse &response, const char * buffer, s
 ATResponse SimcomModem::handleUrcs() {
     if(strncmp_P(_responseBuffer, PSTR("SMS Ready"), 9) == 0) {
         _gotSMSReady = true;
+        return ATResponse::UrcHandled;
     } else if(strncmp_P(_responseBuffer, PSTR("+CIEV"), 5) == 0) {
         _gotCIEV = true;
+        return ATResponse::UrcHandled;
     }
+
+    return ATResponse::ResponseEmpty;
 }

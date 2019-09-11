@@ -20,7 +20,7 @@ bool CellModemSMS::send(char * phoneNumber, const char * text) {
         do{
             response = _modem->readResponse();
             _modem->getCustomDelay()(10);
-        }while(response == ATResponse::ResponseTimeout && !isTimedout(start, 60 * 1000));
+        }while(response == ATResponse::ResponseTimeout && !isTimedout(start, 60000));
 
         if(response == ATResponse::ResponseOK) {
             return true;
@@ -221,6 +221,8 @@ ATResponse CellModemSMS::handleUrcs() {
                     _cmtiCallback(memory, static_cast<int16_t>(index));
                 }
             }
+            
+            return ATResponse::UrcHandled;
         }
         else if (_mt == 2) {
             char phoneNumber[21] = "";
@@ -230,9 +232,12 @@ ATResponse CellModemSMS::handleUrcs() {
                     _cmtCallback(phoneNumber, _modem->getResponseBuffer());
                 }                
             }
+
+            return ATResponse::UrcHandled;
         }    
     }
     
+    return ATResponse::ResponseEmpty;
 }
 
 

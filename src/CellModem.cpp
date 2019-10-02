@@ -243,10 +243,12 @@ bool CellModem::_enableAutoregistrationNetwork(uint32_t timeout) {
     }
 
     uint32_t start = millis();
+    uint16_t waitTime = 1000;
     while(!isTimedout(start, timeout)) {
+        
         sendATCommand(F("AT+COPS=0"));
 
-        if(readResponse(NULL, 1000) == ATResponse::ResponseOK) {
+        if(readResponse(NULL, waitTime) == ATResponse::ResponseOK) {
             _modemDelay(1000);
             
             char nameBuffer[30];
@@ -254,7 +256,7 @@ bool CellModem::_enableAutoregistrationNetwork(uint32_t timeout) {
                 return true;
             }
         }
-
+        waitTime += 5000;
         _modemDelay(1000);
     }
 

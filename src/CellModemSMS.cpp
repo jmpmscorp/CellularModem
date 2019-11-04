@@ -15,7 +15,7 @@ bool CellModemSMS::send(char * phoneNumber, const char * text) {
         _modem->sendData(text, CTRL_Z);
 
         ATResponse response;
-        uint32_t start = millis();
+        uint32_t start = _modem->_modemMillis();
 
         do{
             response = _modem->readResponse();

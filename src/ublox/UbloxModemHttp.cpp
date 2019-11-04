@@ -137,7 +137,7 @@ bool UbloxModemHttp::_initWriteTempFile(const char * buffer, const size_t size) 
 }
 
 bool UbloxModemHttp::_waitHttpResponse(uint8_t * receiveBuffer, const size_t receiveLen, CellModemHttpHeader_t * header) {
-    unsigned long start = millis();
+    unsigned long start = _modem->getCustomMillis()();
 
     do {
         _modem->poll(); 

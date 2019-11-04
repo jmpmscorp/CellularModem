@@ -94,6 +94,8 @@ class CellModem {
         void removeUrcHandler(CellModemUrcHandler * urcHandler);    
 
         char * getResponseBuffer() const;
+        void setCustomMillis(millisFnPtr millisFn);
+        millisFnPtr getCustomMillis();
         void setCustomDelay(delayFnPtr delayFn);
         delayFnPtr getCustomDelay() const;
 
@@ -169,6 +171,7 @@ class CellModem {
         
         virtual bool _enableAutoregistrationNetwork(uint32_t timeout = (uint32_t)4*60*1000);   // 4 minutes
 
+        millisFnPtr _modemMillis = millis;
         delayFnPtr _modemDelay = delay;
         unsigned long _lastResponseOrURCMillis;
         

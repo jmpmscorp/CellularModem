@@ -89,7 +89,6 @@ bool CellModem::forceReset() {
     }
 
     bool timeout = true;
-    
     for (uint8_t i = 0; i < 10; i++) {
         if (isAlive(500)) {
             timeout = false;
@@ -163,11 +162,9 @@ uint8_t CellModem::getActiveLowPowerMode() const {
  * *****************************************************************/
 bool CellModem::isAlive(uint16_t timeout) {    
     sendATCommand(F("AT"));
-
     if(readResponse(nullptr, 1000) == ATResponse::ResponseOK) {
         return true;
     }
-
     return false;
 }
 
@@ -242,7 +239,7 @@ bool CellModem::_enableAutoregistrationNetwork(uint32_t timeout) {
         return true;
     }
 
-    uint32_t start = millis();
+    uint32_t start = _modemMillis();
     uint16_t waitTime = 1000;
     while(!isTimedout(start, timeout)) {
         
@@ -376,7 +373,7 @@ ATResponse CellModem::_cregParser(ATResponse &response, const char* buffer, size
 }
 
 bool CellModem::_waitForSignalQuality(uint32_t timeout) {
-    uint32_t start = millis();
+    uint32_t start = _modemMillis();
 
     int8_t rssi; uint8_t ber;
 
@@ -541,6 +538,15 @@ char * CellModem::getResponseBuffer() const {
 }
 
 
+void CellModem::setCustomMillis(millisFnPtr millisFn) {
+    if(millisFn) {
+        _modemMillis = millisFn;
+    }
+}
+
+millisFnPtr CellModem::getCustomMillis() {
+    return _modemMillis;
+}
 
 void CellModem::setCustomDelay(delayFnPtr delayFn) {
     if(delayFn) {
@@ -585,8 +591,7 @@ ATResponse CellModem::readResponse(char* buffer, size_t size,
         size_t* outSize, uint32_t timeout)
 {
     ATResponse response = ATResponse::ResponseNotFound;
-    uint32_t start = millis();
-
+    uint32_t start = _modemMillis();
     do {
         int count = readLine(buffer, size, 250);
 
@@ -645,7 +650,6 @@ ATResponse CellModem::readResponse(char* buffer, size_t size,
         if(response != ATResponse::ResponseNotFound && response != ATResponse::ResponseMultilineParser) {
             return response;
         }
-
         _modemDelay(10);
 
     } while (!isTimedout(start, timeout));
@@ -662,16 +666,15 @@ ATResponse CellModem::readResponse(char* buffer, size_t size,
 int CellModem::readByte(uint32_t timeout) const
 {
     int c;
-    uint32_t _startMillis = millis();
-
+    uint32_t _startMillis = _modemMillis();
     do {
         c = _serial->read();
         if (c >= 0) {
-            //Serial.print((char)c);
             debugPrint((char)c);
             return c;
         }
-    } while (millis() - _startMillis < timeout);
+
+    } while(_modemMillis() - _startMillis < timeout);
 
     return -1; // -1 indicates timeout
 }

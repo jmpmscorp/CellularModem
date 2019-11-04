@@ -50,7 +50,7 @@ bool UbloxModemFilesystem::writeFile(const char * filename, Stream * stream, con
 
     if(_modem->readResponse(nullptr, 10000) == ATResponse::ResponsePrompt) {
         size_t written = 0;
-        unsigned long start = millis();
+        unsigned long start = _modem->getCustomMillis()();
 
         while(written < size && !isTimedout(start, 30000)) {
             if(stream->available()) {

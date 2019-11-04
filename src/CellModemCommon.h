@@ -3,6 +3,11 @@
 #ifndef __CELLMODEM_COMMON__
 #define __CELLMODEM_COMMON__
 
+#ifdef CELLMODEM_USE_FREERTOS
+    #include "FreeRTOS_SAMD21.h"
+#endif
+
+
 enum class ATResponse : uint8_t {
     ResponseNotFound,
     ResponseOK,
@@ -44,6 +49,7 @@ enum class NetworkTechnology : uint8_t {
 #define STR(x) STR_HELPER(x)
 
 typedef void( *delayFnPtr )(unsigned long milliseconds);
+typedef unsigned long ( *millisFnPtr ) ();
 typedef ATResponse ( * ResponseParserCallbackPtr ) (ATResponse &response, const char * buffer, size_t size, void * param1, void * param2);
 
 typedef struct SafeCharBufferPtr
@@ -62,9 +68,15 @@ typedef struct {
 }UartPins_t;
 
 static inline bool isTimedout(uint32_t from, uint32_t nr_ms) __attribute__((always_inline));
-static inline bool isTimedout(uint32_t from, uint32_t nr_ms)
-{
-    return (millis() - from) > nr_ms;
-}
+
+#ifdef CELLMODEM_USE_FREERTOS
+    static inline bool isTimedout(uint32_t from, uint32_t nr_ms) {
+        return  (uint32_t)( xTaskGetTickCount() * portTICK_PERIOD_MS ) - from  > nr_ms;
+    }
+#else
+    static inline bool isTimedout(uint32_t from, uint32_t nr_ms){
+        return (millis() - from) > nr_ms;
+    }
+#endif
 
 #endif // __CELLMODEM_COMMON__

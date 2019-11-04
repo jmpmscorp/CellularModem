@@ -171,7 +171,7 @@ bool SimcomModem::_initializationProcess() {
     // Serial.println(_gotCIEV);
     addUrcHandler(this);
 
-    unsigned long start = millis();
+    unsigned long start = _modemMillis();
 
     do {
         poll();

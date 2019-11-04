@@ -154,7 +154,7 @@ bool SimcomModemFtp::_sendChunk(Stream &stream, size_t sizeToSend, size_t * byte
 
 bool SimcomModemFtp::_waitFtpPutUrc(uint32_t timeout) {
     _ftpPutUrcReceived = false;
-    unsigned long start = millis();
+    unsigned long start = _modem->getCustomMillis()();
 
     while(!_ftpPutUrcReceived && !isTimedout(start, timeout)) {
         _modem->poll();        

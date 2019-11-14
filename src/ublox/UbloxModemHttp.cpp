@@ -81,6 +81,8 @@ bool UbloxModemHttp::post(const char * path, const char * contentType, const uin
 
     uint32_t filesize = _filesystem->getMaxFileSize();
 
+    if(filesize == 0) return false;
+    
     if(!_filesystem->writeFile(WRITE_TEMP_FILE, sendBuffer, sendLen < filesize ? sendLen : filesize)) {
         return false;
     }
@@ -95,6 +97,8 @@ bool UbloxModemHttp::post(const char * path, const char * contentType, Stream * 
     if(!_initWriteTempFile(WRITE_TEMP_FILE, size)) return false;
 
     uint32_t filesize = _filesystem->getMaxFileSize();
+
+    if(filesize == 0) return false;
 
     if(!_filesystem->writeFile(WRITE_TEMP_FILE, stream, size < filesize ? size : filesize)) {
         return false;
@@ -126,11 +130,19 @@ bool UbloxModemHttp::_initWriteTempFile(const char * buffer, const size_t size) 
     if(!_filesystem) return false;
 
     if(_filesystem->existFile(WRITE_TEMP_FILE)) {
-        _filesystem->deleteFile(WRITE_TEMP_FILE);
+        if(!_filesystem->deleteFile(WRITE_TEMP_FILE)) {
+            return false;
+        }
+    } else {
+        return false;
     }
 
     if(_filesystem->existFile(READ_TEMP_FILE)) {
-        _filesystem->deleteFile(READ_TEMP_FILE);
+        if(!_filesystem->deleteFile(READ_TEMP_FILE)) {
+            return false;
+        }
+    } else {
+        return false;
     }
 
     return true;

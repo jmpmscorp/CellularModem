@@ -71,7 +71,9 @@ static inline bool isTimedout(uint32_t from, uint32_t nr_ms) __attribute__((alwa
 
 #ifdef CELLMODEM_USE_FREERTOS
     static inline bool isTimedout(uint32_t from, uint32_t nr_ms) {
-        return  (uint32_t)( xTaskGetTickCount() * portTICK_PERIOD_MS ) - from  > nr_ms;
+        uint32_t ms_now = (uint32_t)( xTaskGetTickCount() * portTICK_PERIOD_MS);
+        return ms_now - from > nr_ms;
+        // return  (uint32_t)( xTaskGetTickCount() * portTICK_PERIOD_MS ) - from  > nr_ms;
     }
 #else
     static inline bool isTimedout(uint32_t from, uint32_t nr_ms){

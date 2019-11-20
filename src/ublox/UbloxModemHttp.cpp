@@ -133,16 +133,12 @@ bool UbloxModemHttp::_initWriteTempFile(const char * buffer, const size_t size) 
         if(!_filesystem->deleteFile(WRITE_TEMP_FILE)) {
             return false;
         }
-    } else {
-        return false;
     }
 
     if(_filesystem->existFile(READ_TEMP_FILE)) {
         if(!_filesystem->deleteFile(READ_TEMP_FILE)) {
             return false;
         }
-    } else {
-        return false;
     }
 
     return true;

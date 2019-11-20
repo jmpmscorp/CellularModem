@@ -155,7 +155,7 @@ bool UbloxModem::attachGPRS(const char * apn, const char * username, const char 
 
     sendATCommand(F("AT+UPSDA="), DEFAULT_GPRS_PROFILE, ",3");
 
-    if(readResponse(nullptr, 20000) != ATResponse::ResponseOK) {
+    if(readResponse(nullptr, 180000) != ATResponse::ResponseOK) {
         return false;
     }
 

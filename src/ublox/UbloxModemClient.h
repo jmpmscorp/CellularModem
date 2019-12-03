@@ -9,10 +9,11 @@ class UbloxModemClient : public CellModemClient, public CellModemUrcHandler {
         UbloxModemClient(UbloxModem& modem, bool ssl = false);
         ~UbloxModemClient();
 
+        virtual bool setTCPMode(uint8_t mode);
         ATResponse handleUrcs();
 
     protected:
-        virtual int socketConnect(const char * host, uint8_t port, uint8_t * socketId, bool ssl = false, unsigned int timeout = 30000);
+        virtual int socketConnect(const char * host, uint16_t port, uint8_t * socketId, bool ssl = false, unsigned int timeout = 30000);
         virtual int socketAvailable(uint8_t socketId);
         virtual int socketRead(size_t len, uint8_t socketId);
         virtual int socketWrite(const void * buf, size_t len, uint8_t socketId);

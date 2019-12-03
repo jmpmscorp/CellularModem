@@ -8,16 +8,26 @@ UbloxModemClient::UbloxModemClient(UbloxModem& modem, bool ssl):
 
 UbloxModemClient::~UbloxModemClient() {}
 
+bool UbloxModemClient::setTCPMode(uint8_t mode) {
+    _modem->sendATCommand(F("AT+UDCONF=1,"), mode);
 
-int UbloxModemClient::socketConnect(const char * host, uint8_t port, uint8_t * socketId, bool ssl, unsigned int timeout) {
+    if(_modem->readResponse() != ATResponse::ResponseOK) {
+        return false;
+    }
+
+    return true;
+}
+
+int UbloxModemClient::socketConnect(const char * host, uint16_t port, uint8_t * socketId, bool ssl, unsigned int timeout) {
     _modem->sendATCommand(F("AT+USOCR=6"));
 
     if(_modem->readResponse<uint8_t, uint8_t>(_usocrParser, socketId, nullptr, nullptr, (uint32_t)timeout) != ATResponse::ResponseOK) {
         return 0;
     }
+
     _modem->sendATCommand(F("AT+USOCO="), *socketId, ",\"", host, "\",", port);
 
-    if(_modem->readResponse() != ATResponse::ResponseOK ) {
+    if(_modem->readResponse(nullptr, 60000) != ATResponse::ResponseOK ) {
         return 0;
     }
 
@@ -40,7 +50,7 @@ int UbloxModemClient::socketAvailable(uint8_t socketId) {
         return len;
     }
 
-    _socketConnected = isSocketConnected(socketId);
+    //_socketConnected = isSocketConnected(socketId);
 
     return 0;
 }
@@ -65,10 +75,15 @@ int UbloxModemClient::socketRead(size_t len, uint8_t socketId) {
     size_t auxLen;
 
     if(_modem->readResponse<SocketBuffer, size_t>(_usordParser, &_socketBuffer, &auxLen, nullptr, 25000) != ATResponse::ResponseOK) {
-        return 0;
+        auxLen = 0;
     }
 
     _socketAvailable = socketAvailable(socketId);
+
+    if(_socketAvailable > 0) {
+        socketRead(_socketAvailable, _socketId);
+    }
+
     return auxLen;
 }
 
@@ -81,20 +96,22 @@ ATResponse UbloxModemClient::_usordParser(ATResponse &response, const char * buf
 
     if(sscanf_P(buffer, PSTR("+USORD: %d,%d,"), &socketId, &count) == 2) {
         char * ptr = strchr(buffer, '"');
-
+        Serial.println(count);
         if(ptr) {
             ++ptr;
             int i = 0;
 
             while(ptr && *ptr != '"' && i < count && socketBuffer->count() < socketBuffer->size()) {
-                socketBuffer->write(*ptr);
+                socketBuffer->write((uint8_t)*ptr);
+                ++i;
+                ++ptr;
             }
         }
 
         return ATResponse::ResponseEmpty;
     }
 
-    return ATResponse::ResponseError;
+    return ATResponse::ResponseMultilineParser;
 }
 
 int UbloxModemClient::socketWrite(const void* buf, size_t len, uint8_t socketId) {
@@ -111,24 +128,22 @@ int UbloxModemClient::socketWrite(const void* buf, size_t len, uint8_t socketId)
 
         int sent;
        
-        if(_modem->readResponse<int, uint8_t>(_usowrParser, &sent, nullptr, nullptr, 20000) == ATResponse::ResponseOK) {
+        if(_modem->readResponse<int, uint8_t>(_usowrParser, &sent, nullptr, nullptr, 30000) == ATResponse::ResponseOK) {
             return sent;
         }
-    }
-
-    
+    }   
 
     return 0;
 }
 
 ATResponse UbloxModemClient::_usowrParser(ATResponse &response, const char * buffer, size_t size, int * sent, uint8_t * dummy) {
     if(!sent) return ATResponse::ResponseError;
-
+    
     if(sscanf_P(buffer, PSTR("+USOWR: %*d,%d"), sent) == 1) {
         return ATResponse::ResponseEmpty;
     }
 
-    return ATResponse::ResponseError;
+    return ATResponse::ResponseNotFound;
 }
 
 bool UbloxModemClient::isSocketConnected(uint8_t socketId) {
@@ -172,7 +187,9 @@ ATResponse UbloxModemClient::handleUrcs() {
     if(sscanf_P(_modem->getResponseBuffer(), PSTR("+UUSORD: %d,%d"), &param1, &param2) == 2) {
         Serial.println("Aqui URC");
         if(_socketId == param1) {
-            _socketAvailable = param2;
+            Serial.println("Reading!");
+            //_socketAvailable += param2;
+            socketRead(param2, param1);
             return ATResponse::UrcHandled;
         }
     }

@@ -12,12 +12,17 @@
 #ifndef CELLMODEM_MODEL
     #error "You should define a model to use"
 #else
-    #pragma message ("Cellular Modem Library Version 1.2.2")
+    #pragma message ("Cellular Modem Library Version 1.2.4")
     #if CELLMODEM_MODEL == UBLOX
         #pragma message ("MODEL UBLOX")
         #include "ublox/UbloxModem.h"
         
         typedef UbloxModem CellularModem;
+
+        #ifdef CELLMODEM_USE_ARDUINO_CLIENT
+            #include "ublox/UbloxModemClient.h"
+            typedef UbloxModemClient CellularModemClient;
+        #endif
 
         #ifdef CELLMODEM_USE_SMS
             #include "CellModemSMS.h"

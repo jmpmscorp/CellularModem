@@ -6,6 +6,7 @@ class SocketBuffer {
     public:
         SocketBuffer(const size_t size);
 
+        void init();
         size_t count() const;
         size_t size() const;
         void clear();
@@ -23,8 +24,10 @@ class SocketBuffer {
         uint8_t * _buffer;
         uint8_t * _bufferEnd;
 
-        void _incPtr(uint8_t * ptr);
-        void _decPtr(uint8_t * ptr);
+        bool _initialized = false;
+
+        void _incPtr(uint8_t ** ptr);
+        void _decPtr(uint8_t ** ptr);
 
 
 };

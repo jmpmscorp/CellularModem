@@ -23,9 +23,10 @@ class CellModemClient : public Client {
         virtual void stop();
         virtual uint8_t connected();
         virtual operator bool() {return connected(); }
+        virtual bool setTCPMode(uint8_t mode) = 0;
 
     protected:
-        virtual int socketConnect(const char * host, uint8_t port, uint8_t * socketId, bool ssl = false, unsigned int timeout = 30000) = 0;
+        virtual int socketConnect(const char * host, uint16_t port, uint8_t * socketId, bool ssl = false, unsigned int timeout = 30000) = 0;
         virtual int socketAvailable(uint8_t socketId) = 0;
         virtual int socketRead(size_t len, uint8_t socketId) = 0;
         virtual int socketWrite(const void * buf, size_t len, uint8_t socketId) = 0;

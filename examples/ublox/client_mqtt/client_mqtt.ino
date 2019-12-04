@@ -23,6 +23,7 @@
   #warning "User should define his own pins"
 #endif
 
+#define TOGGLE_LED    LED_BUILTIN
 
 CellularModem modem(modemSerial, MODEM_ON_OFF_PIN, MODEM_RESET_PIN, MODEM_STATUS_PIN); 
 CellularModemClient modemClient(modem);
@@ -57,7 +58,25 @@ void connect() {
       debugSerial.println("Not Connected");
     } 
     
-    mqttClient.subscribe("/hello");
+    mqttClient.subscribe("/led");
+  }
+}
+
+void messageReceived(MQTTClient *client, char topic[], char payload[], int payload_length) {
+  Serial.print("Incoming: ");
+  Serial.print(topic);
+  Serial.print(" ");
+  Serial.println(payload);
+
+  if(strstr(topic, "led") && payload_length == 1) {
+    int value = atoi(payload);
+
+    if(value == 0) {
+      digitalWrite(TOGGLE_LED, LOW);
+    }
+    else if(value == 1) {
+      digitalWrite(TOGGLE_LED, HIGH);
+    }
   }
 }
 
@@ -66,6 +85,9 @@ void setup() {
   modemSerial.begin(SERIAL_BAUDRATE);
   debugSerial.begin(SERIAL_BAUDRATE);
 
+  pinMode(TOGGLE_LED, OUTPUT);
+  digitalWrite(TOGGLE_LED, LOW);
+    
   modem.init();
   modem.setUartPins(UartPins_t{MODEM_DTR_PIN, MODEM_DCD_PIN, MODEM_CTS_PIN, MODEM_RTS_PIN, MODEM_RI_PIN});
   modem.setDebugSerial(debugSerial);
@@ -74,7 +96,7 @@ void setup() {
   delay(1000);
   debugSerial.println("Start");
   mqttClient.begin("antaresserver.dynu.net", 1883, modemClient);
-
+  mqttClient.onMessageAdvanced(messageReceived);
   connect();
 
 }
@@ -83,7 +105,7 @@ void loop() {
   // put your main code here, to run repeatedly:
   static unsigned long lastMillis = 0;
 
-  modem.poll(500);
+  modem.poll(250);
   if(!mqttClient.loop()) {
     debugSerial.print("MQTT Error: ");
     debugSerial.println(mqttClient.lastError());
@@ -95,8 +117,8 @@ void loop() {
   }*/
 
   // publish a message roughly every second.
-  /*if (millis() - lastMillis > 5000) {
+  if (millis() - lastMillis > 30000) {
     lastMillis = millis();
     mqttClient.publish("/hello", "world");
-  }*/
+  }
 }

@@ -116,9 +116,13 @@ class CellModem {
                 disableLowPowerMode();
             }
 
+            _serial->print(AT_STR);
             sendData(cmd...);
             _serial->println();
-            //_serial->flush();            
+
+            #ifdef __AVR__
+            _serial->flush();   // Some SAMD implementations hangs on flush. Reported on Arduino Core
+            #endif            
         }
 
         ATResponse readResponse(char* buffer, size_t size, size_t* outSize, uint32_t timeout = CELLMODEM_DEFAULT_TIMEOUT_MS)
@@ -173,7 +177,7 @@ class CellModem {
 
         millisFnPtr _modemMillis = millis;
         delayFnPtr _modemDelay = delay;
-        unsigned long _lastResponseOrURCMillis;
+        // unsigned long _lastResponseOrURCMillis;
         
         uint16_t _responseBufferSize = CELLMODEM_DEFAULT_RESPONSE_BUFFER_SIZE;
         char * _responseBuffer;
@@ -201,8 +205,6 @@ class CellModem {
         bool _isResponseBufferInitialized = false;
 
         CellModemUrcHandler * _urcHandlers[CELLMODEM_MAX_URC_HANDLERS];
-        // CellModemClientsHandler * _clientsHandler;
-
 
         static ATResponse _copsParser(ATResponse &response, const char * buffer, size_t size, char * operatorNameBuffer, size_t * operatorNameBufferSize);
         static ATResponse _copsParser(ATResponse &response, const char * buffer, size_t size, unsigned int * mode, unsigned int * networkTechnology);

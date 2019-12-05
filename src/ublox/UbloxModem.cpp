@@ -13,7 +13,7 @@ UbloxModem::~UbloxModem(){}
 
 
 bool UbloxModem::softwareOff() {
-    sendATCommand(F("AT+CPWROFF"));
+    sendATCommand(F("+CPWROFF"));
 
     if(readResponse(nullptr, 45000) == ATResponse::ResponseOK) {
         return off();
@@ -23,13 +23,13 @@ bool UbloxModem::softwareOff() {
 }
 
 bool UbloxModem::_initializationProcess() {
-    sendATCommand(F("AT+CMEE=2"));
+    sendATCommand(F("+CMEE=2"));
 
     if(readResponse() != ATResponse::ResponseOK) {
         return false;
     }
 
-    sendATCommand(F("AT+UMWI=0"));
+    sendATCommand(F("+UMWI=0"));
 
     if(readResponse() != ATResponse::ResponseOK) {
         return false;
@@ -42,7 +42,7 @@ bool UbloxModem::setLowPowerMode(uint8_t mode) {
         return false;
     }
     
-    sendATCommand(F("AT+UPSV="), mode);
+    sendATCommand(F("+UPSV="), mode);
 
     if(readResponse() == ATResponse::ResponseOK) {
         _lowPowerMode = mode;
@@ -118,14 +118,14 @@ bool UbloxModem::attachGPRS(const char * apn, const char * username, const char 
         detachGRPS();
     }
 
-    sendATCommand(F("AT+UPSD="), DEFAULT_GPRS_PROFILE, ",1,\"", apn, "\"");
+    sendATCommand(F("+UPSD="), DEFAULT_GPRS_PROFILE, ",1,\"", apn, "\"");
 
     if(readResponse() != ATResponse::ResponseOK) {
         return false;
     }
 
     if(username && *username) {
-        sendATCommand(F("AT+UPSD="), DEFAULT_GPRS_PROFILE, ",2,\"", username, "\"");
+        sendATCommand(F("+UPSD="), DEFAULT_GPRS_PROFILE, ",2,\"", username, "\"");
 
         if(readResponse() != ATResponse::ResponseOK) {
             return false;
@@ -133,7 +133,7 @@ bool UbloxModem::attachGPRS(const char * apn, const char * username, const char 
     }
 
     if(password && *password) {
-        sendATCommand(F("AT+UPSD="), DEFAULT_GPRS_PROFILE, ",3,\"", password, "\"");
+        sendATCommand(F("+UPSD="), DEFAULT_GPRS_PROFILE, ",3,\"", password, "\"");
 
         if(readResponse() != ATResponse::ResponseOK) {
             return false;
@@ -141,19 +141,19 @@ bool UbloxModem::attachGPRS(const char * apn, const char * username, const char 
     }
 
     //DHCP
-    sendATCommand(F("AT+UPSD="), DEFAULT_GPRS_PROFILE,F(",7,\"0.0.0.0\""));
+    sendATCommand(F("+UPSD="), DEFAULT_GPRS_PROFILE,F(",7,\"0.0.0.0\""));
 
     if(readResponse() != ATResponse::ResponseOK) {
         return false;
     }
 
-    sendATCommand(F("AT+UPSD="), DEFAULT_GPRS_PROFILE, F(",6,3"));
+    sendATCommand(F("+UPSD="), DEFAULT_GPRS_PROFILE, F(",6,3"));
 
     if(readResponse() != ATResponse::ResponseOK) {
         return false;
     }
 
-    sendATCommand(F("AT+UPSDA="), DEFAULT_GPRS_PROFILE, ",3");
+    sendATCommand(F("+UPSDA="), DEFAULT_GPRS_PROFILE, ",3");
 
     if(readResponse(nullptr, 180000) != ATResponse::ResponseOK) {
         return false;
@@ -163,7 +163,7 @@ bool UbloxModem::attachGPRS(const char * apn, const char * username, const char 
 }
 
 bool UbloxModem::detachGRPS() {
-    sendATCommand(F("AT+UPSDA="), DEFAULT_GPRS_PROFILE, ",4");
+    sendATCommand(F("+UPSDA="), DEFAULT_GPRS_PROFILE, ",4");
 
     if(readResponse(nullptr, 40000) == ATResponse::ResponseOK) {
         return true;
@@ -175,7 +175,7 @@ bool UbloxModem::detachGRPS() {
 bool UbloxModem::isGPRSConnected() {
     uint8_t value = 0;
 
-    sendATCommand(F("AT+UPSND="), DEFAULT_GPRS_PROFILE,",8");
+    sendATCommand(F("+UPSND="), DEFAULT_GPRS_PROFILE,",8");
 
     if(readResponse<uint8_t, uint8_t>(_upsndParser, &value, nullptr) == ATResponse::ResponseOK) {
         return value == 1;
@@ -201,7 +201,7 @@ bool UbloxModem::enableDatetimeNetworkSync() {
         return false;
     }
 
-    sendATCommand(F("AT+COPS=2"));
+    sendATCommand(F("+COPS=2"));
 
     if(readResponse() != ATResponse::ResponseOK) {
         return false;
@@ -235,7 +235,7 @@ bool UbloxModem::disableDatetimeNetworkSync() {
 }
 
 bool UbloxModem::_setCTZU(uint8_t mode) {
-    sendATCommand(F("AT+CTZU="), mode);
+    sendATCommand(F("+CTZU="), mode);
 
     if(readResponse() == ATResponse::ResponseOK) {
         return true;
@@ -245,7 +245,7 @@ bool UbloxModem::_setCTZU(uint8_t mode) {
 }
 
 int8_t UbloxModem::_getCTZU() {
-    sendATCommand(F("AT+CTZU?"));
+    sendATCommand(F("+CTZU?"));
 
     unsigned int mode;
     if(readResponse<unsigned int, uint8_t>(_ctzuParser, &mode, nullptr) == ATResponse::ResponseOK) {

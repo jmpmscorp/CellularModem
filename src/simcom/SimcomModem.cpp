@@ -8,7 +8,7 @@ SimcomModem::SimcomModem(Stream &serial, int8_t onOffPin, int8_t resetPin, int8_
 SimcomModem::~SimcomModem() {}
 
 bool SimcomModem::softwareOff() {
-    sendATCommand(F("AT+CPOWD=1"));
+    sendATCommand(F("+CPOWD=1"));
 
     if(readResponse<uint8_t, uint8_t>(_cpowdParser, nullptr, nullptr, nullptr, 60000) == ATResponse::ResponseOK) {
         off();
@@ -27,7 +27,7 @@ ATResponse SimcomModem::_cpowdParser(ATResponse &response, const char * buffer, 
 }
 
 bool SimcomModem::setLowPowerMode(uint8_t mode) {
-    sendATCommand(F("AT+CSCLK="), mode);
+    sendATCommand(F("+CSCLK="), mode);
 
     if(readResponse() == ATResponse::ResponseOK) {
         _lowPowerMode = mode;
@@ -72,23 +72,23 @@ bool SimcomModem::attachGPRS(const char * apn, const char * username, const char
         detachGRPS();
     }
 
-    sendATCommand(F("AT+SAPBR=3,"), DEFAULT_BEARER_ID, ",\"APN\",\"", apn, '"');
+    sendATCommand(F("+SAPBR=3,"), DEFAULT_BEARER_ID, ",\"APN\",\"", apn, '"');
 
     if(readResponse() != ATResponse::ResponseOK) return false;
 
     if(username != nullptr) {
-        sendATCommand(F("AT+SAPBR=3,"), DEFAULT_BEARER_ID, ",\"USER\",\"", username, '"');
+        sendATCommand(F("+SAPBR=3,"), DEFAULT_BEARER_ID, ",\"USER\",\"", username, '"');
 
         if(readResponse() != ATResponse::ResponseOK) return false;
     }
 
     if(password != nullptr) {
-        sendATCommand(F("AT+SAPBR=3,"), DEFAULT_BEARER_ID, ",\"PWD\",\"", password, '"');
+        sendATCommand(F("+SAPBR=3,"), DEFAULT_BEARER_ID, ",\"PWD\",\"", password, '"');
 
         if(readResponse() != ATResponse::ResponseOK) return false;
     }
 
-    sendATCommand(F("AT+SAPBR=1,"), DEFAULT_BEARER_ID);
+    sendATCommand(F("+SAPBR=1,"), DEFAULT_BEARER_ID);
 
     if(readResponse(nullptr, 85000) == ATResponse::ResponseOK) return true;
 
@@ -96,7 +96,7 @@ bool SimcomModem::attachGPRS(const char * apn, const char * username, const char
 }
 
 bool SimcomModem::detachGRPS() {
-    sendATCommand(F("AT+SAPBR=0,"), DEFAULT_BEARER_ID);
+    sendATCommand(F("+SAPBR=0,"), DEFAULT_BEARER_ID);
 
     if(readResponse(nullptr, 65000) == ATResponse::ResponseOK) {
         return true;
@@ -106,7 +106,7 @@ bool SimcomModem::detachGRPS() {
 }
 
 bool SimcomModem::isGPRSConnected() {
-    sendATCommand(F("AT+SAPBR=2,"), DEFAULT_BEARER_ID);
+    sendATCommand(F("+SAPBR=2,"), DEFAULT_BEARER_ID);
 
     unsigned int status = 0;
 
@@ -138,7 +138,7 @@ bool SimcomModem::enableDatetimeNetworkSync() {
         return false;
     }
 
-    sendATCommand(F("AT+COPS=2"));
+    sendATCommand(F("+COPS=2"));
 
     if(readResponse() != ATResponse::ResponseOK) {
         return false;
@@ -156,7 +156,7 @@ bool SimcomModem::disableDatetimeNetworkSync() {
 }
 
 bool SimcomModem::_setCLTS(uint8_t mode) {
-    sendATCommand(F("AT+CLTS="), mode);
+    sendATCommand(F("+CLTS="), mode);
 
     if(readResponse() == ATResponse::ResponseOK) {
         return true;
@@ -188,7 +188,7 @@ bool SimcomModem::_initializationProcess() {
 
 
 int8_t SimcomModem::_getCLTS() {
-    sendATCommand(F("AT+CLTS?"));
+    sendATCommand(F("+CLTS?"));
 
     unsigned int mode;
     if(readResponse<unsigned int, uint8_t>(_cltsParser, &mode, nullptr) == ATResponse::ResponseOK) {        

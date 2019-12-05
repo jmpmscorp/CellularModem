@@ -9,7 +9,7 @@ CellModemSMS::CellModemSMS(CellModem &modem) :
 }
 
 bool CellModemSMS::send(char * phoneNumber, const char * text) {
-    _modem->sendATCommand(F("AT+CMGS=\""), phoneNumber, F("\""));
+    _modem->sendATCommand(F("+CMGS=\""), phoneNumber, F("\""));
 
     if(_modem->readResponse() == ATResponse::ResponsePrompt) {
         _modem->sendData(text, CTRL_Z);
@@ -36,7 +36,7 @@ bool CellModemSMS::send(char * phoneNumber, const char * text) {
 bool CellModemSMS::read(uint16_t index, char * phoneNumber, size_t phoneNumberSize,
      char * textBuffer, size_t textBufferSize) 
 {
-    _modem->sendATCommand(F("AT+CMGR="), index);
+    _modem->sendATCommand(F("+CMGR="), index);
 
     SafeCharBufferPtr safePhoneNumber = { phoneNumber, phoneNumberSize};
     SafeCharBufferPtr safeTextBuffer = { textBuffer, textBufferSize };
@@ -74,7 +74,7 @@ ATResponse CellModemSMS::_cmgrParser(ATResponse& response, const char* buffer, s
 }
 
 int CellModemSMS::readList(const char * filter, unsigned int * indexList, size_t indexListSize, unsigned int * remainingSize) {
-    _modem->sendATCommand(F("AT+CMGL=\""), filter, F("\""));
+    _modem->sendATCommand(F("+CMGL=\""), filter, F("\""));
 
     if(!indexList) {
         return -1;
@@ -139,17 +139,17 @@ bool CellModemSMS::remove(unsigned int index, uint8_t flag) {
     }
 
     if( flag == 0) {
-        _modem->sendATCommand(F("AT+CMGD="), index);
+        _modem->sendATCommand(F("+CMGD="), index);
     }
     else {
-        _modem->sendATCommand(F("AT+CMGD="), index, ",", flag);
+        _modem->sendATCommand(F("+CMGD="), index, ",", flag);
     }
 
     return _modem->readResponse() == ATResponse::ResponseOK;
 }
 
 bool CellModemSMS::setNewSMSIndicator(uint8_t mode, uint8_t mt) {
-    _modem->sendATCommand(F("AT+CNMI="), mode, ',', mt);
+    _modem->sendATCommand(F("+CNMI="), mode, ',', mt);
 
     if(_modem->readResponse() == ATResponse::ResponseOK) {
         _mt = mt;
@@ -160,7 +160,7 @@ bool CellModemSMS::setNewSMSIndicator(uint8_t mode, uint8_t mt) {
 }
 
 int8_t CellModemSMS::getMode() {
-    _modem->sendATCommand(F("AT+CMGF?"));
+    _modem->sendATCommand(F("+CMGF?"));
     
     uint8_t mode;
     if(_modem->readResponse<uint8_t, uint8_t>(_cmgfParser, &mode, NULL) != ATResponse::ResponseOK) {
@@ -179,7 +179,7 @@ bool CellModemSMS::setPDUMode() {
 }
 
 bool CellModemSMS::_setMode(uint8_t mode) {
-    _modem->sendATCommand(F("AT+CMGF="), mode);
+    _modem->sendATCommand(F("+CMGF="), mode);
 
     if(_modem->readResponse() == ATResponse::ResponseOK) {
         return true;

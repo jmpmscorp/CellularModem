@@ -18,7 +18,7 @@ bool CellModemPhonebook::addContact(const char * phoneNumber, const char * conta
     }
 
     
-    _modem->sendATCommand(F("AT+CPBW="), indexBuffer,",\"", 
+    _modem->sendATCommand(F("+CPBW="), indexBuffer,",\"", 
         phoneNumber,"\",,\"", contactName != nullptr ? contactName : phoneNumber, '"');
 
     
@@ -36,7 +36,7 @@ bool CellModemPhonebook::readContact(uint8_t index, char * numberBuffer, char * 
         return false;
     }
 
-    _modem->sendATCommand(F("AT+CPBR="), index);
+    _modem->sendATCommand(F("+CPBR="), index);
 
     return _modem->readResponse<char, char>(_cpbrParser, numberBuffer, contactNameBuffer) == ATResponse::ResponseOK;
 }
@@ -59,7 +59,7 @@ int CellModemPhonebook::searchContacts(const char * toFindStr, unsigned int * in
         return 0;
     }
 
-    _modem->sendATCommand(F("AT+CPBF=\""), toFindStr, "\"");
+    _modem->sendATCommand(F("+CPBF=\""), toFindStr, "\"");
 
     int freeBufferSize = indexesBufferSize;
 
@@ -106,7 +106,7 @@ bool CellModemPhonebook::removeContact(uint8_t index) {
         return false;
     }
 
-    _modem->sendATCommand(F("AT+CPBW= "), index);
+    _modem->sendATCommand(F("+CPBW= "), index);
 
     if(_modem->readResponse() == ATResponse::ResponseOK) {
         return true;

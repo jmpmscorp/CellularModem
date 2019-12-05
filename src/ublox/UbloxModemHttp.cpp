@@ -26,26 +26,26 @@ bool UbloxModemHttp::initSSL(const char * server, const uint16_t port) {
 }
 
 bool UbloxModemHttp::_init(const char * server, const uint16_t port, const bool ssl) {
-    _modem->sendATCommand(F("AT+UHTTP="), DEFAULT_HTTP_PROFILE);
+    _modem->sendATCommand(F("+UHTTP="), DEFAULT_HTTP_PROFILE);
 
     if(_modem->readResponse() != ATResponse::ResponseOK) {
         return false;
     }
 
-    _modem->sendATCommand(F("AT+UHTTP="), DEFAULT_HTTP_PROFILE, ",1,\"", server, "\"");
+    _modem->sendATCommand(F("+UHTTP="), DEFAULT_HTTP_PROFILE, ",1,\"", server, "\"");
 
     if(_modem->readResponse() != ATResponse::ResponseOK) {
         return false;
     }
 
-    _modem->sendATCommand(F("AT+UHTTP="), DEFAULT_HTTP_PROFILE, ",5,", port);
+    _modem->sendATCommand(F("+UHTTP="), DEFAULT_HTTP_PROFILE, ",5,", port);
 
     if(_modem->readResponse() != ATResponse::ResponseOK) {
         return false;
     }
 
     if(ssl) {
-        _modem->sendATCommand(F("AT+UHTTP="), DEFAULT_HTTP_PROFILE, ",6,1,0");
+        _modem->sendATCommand(F("+UHTTP="), DEFAULT_HTTP_PROFILE, ",6,1,0");
 
         if(_modem->readResponse() != ATResponse::ResponseOK) {
             return false;
@@ -65,7 +65,7 @@ bool UbloxModemHttp::getHttpResult() const {
 
 bool UbloxModemHttp::get(const char * path, uint8_t * receiveBuffer, const size_t receiveLen, CellModemHttpHeader_t * header) {
 
-    _modem->sendATCommand(F("AT+UHTTPC="), DEFAULT_HTTP_PROFILE, ",1,\"", path,"\",\"", READ_TEMP_FILE, "\"");
+    _modem->sendATCommand(F("+UHTTPC="), DEFAULT_HTTP_PROFILE, ",1,\"", path,"\",\"", READ_TEMP_FILE, "\"");
 
     if(_modem->readResponse() != ATResponse::ResponseOK) {
         return false;
@@ -87,7 +87,7 @@ bool UbloxModemHttp::post(const char * path, const char * contentType, const uin
         return false;
     }
 
-    _modem->sendATCommand(F("AT+UHTTPC="), DEFAULT_HTTP_PROFILE,",4,\"", path, "\",\"", READ_TEMP_FILE, "\",\"", WRITE_TEMP_FILE, "\",", 6, ",\"", contentType, "\"");
+    _modem->sendATCommand(F("+UHTTPC="), DEFAULT_HTTP_PROFILE,",4,\"", path, "\",\"", READ_TEMP_FILE, "\",\"", WRITE_TEMP_FILE, "\",", 6, ",\"", contentType, "\"");
 
     return _endRequest(receiveBuffer, receiveLen, header);    
 }
@@ -104,7 +104,7 @@ bool UbloxModemHttp::post(const char * path, const char * contentType, Stream * 
         return false;
     }
 
-    _modem->sendATCommand(F("AT+UHTTPC="), DEFAULT_HTTP_PROFILE,",4,\"", path, "\",\"", READ_TEMP_FILE, "\",\"", WRITE_TEMP_FILE, "\",", 6, ",\"", contentType, "\"");
+    _modem->sendATCommand(F("+UHTTPC="), DEFAULT_HTTP_PROFILE,",4,\"", path, "\",\"", READ_TEMP_FILE, "\",\"", WRITE_TEMP_FILE, "\",", 6, ",\"", contentType, "\"");
 
     return _endRequest(receiveBuffer, receiveLen, header);
 }
@@ -156,7 +156,7 @@ bool UbloxModemHttp::_waitHttpResponse(uint8_t * receiveBuffer, const size_t rec
         int errorClass, errorCode;
         if(!_httpResult) {      
 
-            _modem->sendATCommand(F("AT+UHTTPER="), DEFAULT_HTTP_PROFILE);
+            _modem->sendATCommand(F("+UHTTPER="), DEFAULT_HTTP_PROFILE);
 
             if(_modem->readResponse<int, int>(_uhttperParser, &errorClass, &errorCode) == ATResponse::ResponseOK) {
                 
@@ -177,7 +177,7 @@ bool UbloxModemHttp::_waitHttpResponse(uint8_t * receiveBuffer, const size_t rec
 bool UbloxModemHttp::readResponse(CellModemHttpHeader_t * header, char * bodyBuffer, size_t len) {
     if(!_httpResult) {
         int errorClass, errorCode;
-        _modem->sendATCommand(F("AT+UHTTPER="), DEFAULT_HTTP_PROFILE);
+        _modem->sendATCommand(F("+UHTTPER="), DEFAULT_HTTP_PROFILE);
 
         _modem->readResponse<int, int>(_uhttperParser, &errorClass, &errorCode);
         

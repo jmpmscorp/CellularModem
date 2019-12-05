@@ -8,7 +8,7 @@ UbloxModemFilesystem::UbloxModemFilesystem(UbloxModem &modem) :
 }
 
 uint32_t UbloxModemFilesystem::getMaxFileSize() {
-    _modem->sendATCommand(F("AT+ULSTFILE=1"));
+    _modem->sendATCommand(F("+ULSTFILE=1"));
 
     uint32_t filesize;
     if(_modem->readResponse<uint32_t, uint8_t>(_ulstfileParser, &filesize, nullptr, nullptr, 30000) == ATResponse::ResponseOK) {
@@ -31,7 +31,7 @@ ATResponse UbloxModemFilesystem::_ulstfileParser(ATResponse &response, const cha
 }
 
 bool UbloxModemFilesystem::writeFile(const char * filename, const uint8_t * buffer, const size_t size) {
-    _modem->sendATCommand(F("AT+UDWNFILE=\""), filename, "\",", size);
+    _modem->sendATCommand(F("+UDWNFILE=\""), filename, "\",", size);
 
     if(_modem->readResponse(nullptr, 10000) == ATResponse::ResponsePrompt) {
         _modem->getSerial()->write(buffer, size);
@@ -46,7 +46,7 @@ bool UbloxModemFilesystem::writeFile(const char * filename, const uint8_t * buff
 
 
 bool UbloxModemFilesystem::writeFile(const char * filename, Stream * stream, const size_t size) {
-    _modem->sendATCommand(F("AT+UDWNFILE=\""), filename, "\",", size);
+    _modem->sendATCommand(F("+UDWNFILE=\""), filename, "\",", size);
 
     if(_modem->readResponse(nullptr, 10000) == ATResponse::ResponsePrompt) {
         size_t written = 0;
@@ -72,7 +72,7 @@ bool UbloxModemFilesystem::writeFile(const char * filename, Stream * stream, con
 }
 
 bool UbloxModemFilesystem::readFile(const char * filename, ResponseParserCallbackPtr readparser, void* param1, void* param2) {
-    _modem->sendATCommand(F("AT+URDFILE=\""), filename, "\"");
+    _modem->sendATCommand(F("+URDFILE=\""), filename, "\"");
     if(_modem->readResponse<void, void>(*readparser, param1, param2) == ATResponse::ResponseOK) {
         return true;
 
@@ -90,7 +90,7 @@ ATResponse UbloxModemFilesystem::_readfileParser(ATResponse &response, const cha
 }
 
 bool UbloxModemFilesystem::existFile(const char * filename) {
-    _modem->sendATCommand(F("AT+ULSTFILE=2,\""), filename,"\"");
+    _modem->sendATCommand(F("+ULSTFILE=2,\""), filename,"\"");
 
     uint32_t filesize;
     if(_modem->readResponse<uint32_t, uint8_t>(_ulstfileParser, &filesize, nullptr) == ATResponse::ResponseOK) {
@@ -103,7 +103,7 @@ bool UbloxModemFilesystem::existFile(const char * filename) {
 }
 
 bool UbloxModemFilesystem::deleteFile(const char * filename) {
-    _modem->sendATCommand(F("AT+UDELFILE=\""), filename, "\"");
+    _modem->sendATCommand(F("+UDELFILE=\""), filename, "\"");
 
     if(_modem->readResponse() == ATResponse::ResponseOK) {
         return true;

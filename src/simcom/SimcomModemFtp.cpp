@@ -9,20 +9,20 @@ SimcomModemFtp::SimcomModemFtp(SimcomModem &modem) :
 bool SimcomModemFtp::init(const char * server, const char * username, const char * password) {
     if(server == nullptr || strlen(server) <= 0) return false;
 
-    _modem->sendATCommand(F("AT+FTPCID="), DEFAULT_BEARER_ID);
+    _modem->sendATCommand(F("+FTPCID="), DEFAULT_BEARER_ID);
 
     if(_modem->readResponse() != ATResponse::ResponseOK) {
         return false;
     }
 
-    _modem->sendATCommand(F("AT+FTPSERV=\""), server, '"');
+    _modem->sendATCommand(F("+FTPSERV=\""), server, '"');
 
     if(_modem->readResponse() != ATResponse::ResponseOK) {
         return false;
     }
 
     if(username != nullptr && strlen(username) > 0) {
-        _modem->sendATCommand(F("AT+FTPUN=\""), username, '"');
+        _modem->sendATCommand(F("+FTPUN=\""), username, '"');
 
         if(_modem->readResponse() != ATResponse::ResponseOK) {
             return false;
@@ -30,7 +30,7 @@ bool SimcomModemFtp::init(const char * server, const char * username, const char
     }
 
     if(password != nullptr && strlen(password) > 0) {
-        _modem->sendATCommand(F("AT+FTPPW=\""), password, '"');
+        _modem->sendATCommand(F("+FTPPW=\""), password, '"');
 
         if(_modem->readResponse() != ATResponse::ResponseOK) {
             return false;
@@ -50,14 +50,14 @@ bool SimcomModemFtp::_initFtpTransaction(const char * path, const char * filenam
     }
 
     if(path != nullptr && strlen(path) > 0) {
-        _modem->sendATCommand(F("AT+FTPPUTPATH=\""), path, '"');
+        _modem->sendATCommand(F("+FTPPUTPATH=\""), path, '"');
 
         if(_modem->readResponse() != ATResponse::ResponseOK) {
             return false;
         }
     }
 
-    _modem->sendATCommand(F("AT+FTPPUT=1"));
+    _modem->sendATCommand(F("+FTPPUT=1"));
     
     if(_modem->readResponse() != ATResponse::ResponseOK) {
         return false;
@@ -71,7 +71,7 @@ bool SimcomModemFtp::_initFtpTransaction(const char * path, const char * filenam
 }
 
 bool SimcomModemFtp::_endFtpTransaction() {
-    _modem->sendATCommand(F("AT+FTPPUT=2,0"));
+    _modem->sendATCommand(F("+FTPPUT=2,0"));
 
     if(_modem->readResponse() != ATResponse::ResponseOK) return false;
 
@@ -121,7 +121,7 @@ bool SimcomModemFtp::send(const char * path, const char * filename, Stream &stre
 }
 
 bool SimcomModemFtp::_sendChunk(const uint8_t * buffer, size_t sizeToSend, size_t * bytesSent) {
-    _modem->sendATCommand(F("AT+FTPPUT=2,"), sizeToSend);
+    _modem->sendATCommand(F("+FTPPUT=2,"), sizeToSend);
 
     if(!_waitFtpPutUrc()) return false;
     if(_transactionLength != sizeToSend) return false;
@@ -136,7 +136,7 @@ bool SimcomModemFtp::_sendChunk(const uint8_t * buffer, size_t sizeToSend, size_
 }
 
 bool SimcomModemFtp::_sendChunk(Stream &stream, size_t sizeToSend, size_t * bytesSent) {
-    _modem->sendATCommand(F("AT+FTPPUT=2,"), sizeToSend);
+    _modem->sendATCommand(F("+FTPPUT=2,"), sizeToSend);
 
     if(!_waitFtpPutUrc()) return false;
     if(_transactionLength != sizeToSend) return false;

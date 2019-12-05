@@ -9,7 +9,7 @@ UbloxModemClient::UbloxModemClient(UbloxModem& modem, bool ssl):
 UbloxModemClient::~UbloxModemClient() {}
 
 bool UbloxModemClient::setTCPMode(uint8_t mode) {
-    _modem->sendATCommand(F("AT+UDCONF=1,"), mode);
+    _modem->sendATCommand(F("+UDCONF=1,"), mode);
 
     if(_modem->readResponse() != ATResponse::ResponseOK) {
         return false;
@@ -19,13 +19,13 @@ bool UbloxModemClient::setTCPMode(uint8_t mode) {
 }
 
 int UbloxModemClient::socketConnect(const char * host, uint16_t port, uint8_t * socketId, bool ssl, unsigned int timeout) {
-    _modem->sendATCommand(F("AT+USOCR=6"));
+    _modem->sendATCommand(F("+USOCR=6"));
 
     if(_modem->readResponse<uint8_t, uint8_t>(_usocrParser, socketId, nullptr, nullptr, (uint32_t)timeout) != ATResponse::ResponseOK) {
         return 0;
     }
 
-    _modem->sendATCommand(F("AT+USOCO="), *socketId, ",\"", host, "\",", port);
+    _modem->sendATCommand(F("+USOCO="), *socketId, ",\"", host, "\",", port);
 
     if(_modem->readResponse(nullptr, 60000) != ATResponse::ResponseOK ) {
         return 0;
@@ -43,7 +43,7 @@ ATResponse UbloxModemClient::_usocrParser(ATResponse &response, const char * buf
 }
 
 int UbloxModemClient::socketAvailable(uint8_t socketId) {
-    _modem->sendATCommand(F("AT+USORD="), socketId, ",0");
+    _modem->sendATCommand(F("+USORD="), socketId, ",0");
     
     int len;
     if(_modem->readResponse<int, uint8_t>(_usordParser, &len, nullptr) == ATResponse::ResponseOK) {
@@ -70,7 +70,7 @@ ATResponse UbloxModemClient::_usordParser(ATResponse &response, const char * buf
 
 int UbloxModemClient::socketRead(size_t len, uint8_t socketId) {
     Serial.println("Socket Read!");
-    _modem->sendATCommand(F("AT+USORD="), socketId, ",", len);
+    _modem->sendATCommand(F("+USORD="), socketId, ",", len);
 
     size_t auxLen;
 
@@ -115,7 +115,7 @@ ATResponse UbloxModemClient::_usordParser(ATResponse &response, const char * buf
 }
 
 int UbloxModemClient::socketWrite(const void* buf, size_t len, uint8_t socketId) {
-    _modem->sendATCommand(F("AT+USOWR="), socketId, ',', len);
+    _modem->sendATCommand(F("+USOWR="), socketId, ',', len);
 
     if(_modem->readResponse() == ATResponse::ResponsePrompt) {
         delayFnPtr customDelay = _modem->getCustomDelay();
@@ -147,7 +147,7 @@ ATResponse UbloxModemClient::_usowrParser(ATResponse &response, const char * buf
 }
 
 bool UbloxModemClient::isSocketConnected(uint8_t socketId) {
-    _modem->sendATCommand(F("AT+USOCTL="), socketId, ",10");
+    _modem->sendATCommand(F("+USOCTL="), socketId, ",10");
 
     uint8_t status;
     if(_modem->readResponse<uint8_t, uint8_t>(_usoctlParser, &status, nullptr) == ATResponse::ResponseOK) {
@@ -172,7 +172,7 @@ ATResponse UbloxModemClient::_usoctlParser(ATResponse &response, const char * bu
 }
 
 bool UbloxModemClient::socketDisconnect(uint8_t socketId) {
-    _modem->sendATCommand(F("AT+USOCL="), socketId);
+    _modem->sendATCommand(F("+USOCL="), socketId);
 
     if(_modem->readResponse() == ATResponse::ResponseOK) {
         return true;

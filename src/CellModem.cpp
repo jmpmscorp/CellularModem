@@ -113,7 +113,7 @@ bool CellModem::isOn() const {
 }
 
 bool CellModem::reset() {
-    sendATCommand(F("AT+CFUN=16"));
+    sendATCommand(F("+CFUN=16"));
 
     return readResponse() == ATResponse::ResponseOK;
 }
@@ -161,7 +161,7 @@ uint8_t CellModem::getActiveLowPowerMode() const {
  * **************   NETWORK FUNCTIONS ******************************
  * *****************************************************************/
 bool CellModem::isAlive(uint16_t timeout) {    
-    sendATCommand(F("AT"));
+    sendATCommand("");
     if(readResponse(nullptr, 1000) == ATResponse::ResponseOK) {
         return true;
     }
@@ -169,7 +169,7 @@ bool CellModem::isAlive(uint16_t timeout) {
 }
 
 bool CellModem::_initializationProcess() {
-    sendATCommand(F("AT+CMEE=2"));
+    sendATCommand(F("+CMEE=2"));
 
     if(readResponse() != ATResponse::ResponseOK) {
         return false;
@@ -224,7 +224,7 @@ bool CellModem::networkOn(const char * pin, bool enableAutoregistration) {
 }
 
 int8_t CellModem::_getAutoregistrationNetworkMode() {
-    sendATCommand(F("AT+COPS?"));
+    sendATCommand(F("+COPS?"));
 
     unsigned int mode;
     if(readResponse<unsigned int, unsigned int>(_copsParser, &mode, NULL) != ATResponse::ResponseOK) {
@@ -243,7 +243,7 @@ bool CellModem::_enableAutoregistrationNetwork(uint32_t timeout) {
     uint16_t waitTime = 1000;
     while(!isTimedout(start, timeout)) {
         
-        sendATCommand(F("AT+COPS=0"));
+        sendATCommand(F("+COPS=0"));
 
         if(readResponse(NULL, waitTime) == ATResponse::ResponseOK) {
             _modemDelay(1000);
@@ -272,7 +272,7 @@ bool CellModem::getOperatorName(char * buffer, size_t size) {
         return false;
     }
 
-    sendATCommand(F("AT+COPS?"));
+    sendATCommand(F("+COPS?"));
 
     if (readResponse<char, size_t>(_copsParser, buffer, &size) != ATResponse::ResponseOK) {
         return false;
@@ -339,7 +339,7 @@ bool CellModem::isNetworkRegistered() {
 }
 
 NetworkRegistrationStatus CellModem::getNetworkRegistrationStatus() {
-    sendATCommand(F("AT+CREG?"));
+    sendATCommand(F("+CREG?"));
 
     unsigned int status;
     if(readResponse<unsigned int, uint8_t>(_cregParser, &status, NULL) == ATResponse::ResponseOK) {
@@ -396,7 +396,7 @@ bool CellModem::_waitForSignalQuality(uint32_t timeout) {
 }
 
 bool CellModem::getSignalQuality(int8_t * rssi, uint8_t * ber) {
-    sendATCommand(F("AT+CSQ"));
+    sendATCommand(F("+CSQ"));
 
     int csqRaw = 0;
     int berRaw = 0;
@@ -434,7 +434,7 @@ SIMStatus CellModem::getSIMStatus() {
             _modemDelay(250);
         }
 
-        sendATCommand("AT+CPIN?");
+        sendATCommand("+CPIN?");
         if (readResponse<SIMStatus, uint8_t>(_cpinParser, &simStatus, NULL) == ATResponse::ResponseOK) {
             return simStatus;
         }
@@ -451,7 +451,7 @@ bool CellModem::setSIMPin(const char * pin) {
         return false;
     }
 
-    sendATCommand(F("AT+CPIN=\""), pin, F("\""));
+    sendATCommand(F("+CPIN=\""), pin, F("\""));
 
     if(readResponse() == ATResponse::ResponseOK) {
         return true;
@@ -483,7 +483,7 @@ ATResponse CellModem::_cpinParser(ATResponse& response, const char * buffer, siz
 
 
 bool CellModem::getDatetime(char * buffer, size_t size) {
-    sendATCommand(F("AT+CCLK?"));
+    sendATCommand(F("+CCLK?"));
 
     size_t auxSize = size;
     if(readResponse<char, size_t>(_cclkParser, buffer, &auxSize) == ATResponse::ResponseOK) {

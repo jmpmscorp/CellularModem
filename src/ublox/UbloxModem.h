@@ -13,25 +13,25 @@ class UbloxModem : public CellModem {
         UbloxModem(Stream &stream, int8_t onOffPin, int8_t resetPin, int8_t statusPin);
         ~UbloxModem();
 
-        virtual bool softwareOff();
+        virtual bool softwareOff() override;
 
-        virtual bool setLowPowerMode(uint8_t mode);
-        virtual bool enableLowPowerMode();
-        virtual bool disableLowPowerMode();
+        virtual bool setLowPowerMode(uint8_t mode) override;
+        virtual bool enableLowPowerMode() override;
+        virtual bool disableLowPowerMode() override;
 
-        virtual bool attachGPRS(const char * apn, const char * username, const char * password);
-        virtual bool detachGRPS();
-        virtual bool isGPRSConnected();
+        virtual bool attachGPRS(const char * apn, const char * username, const char * password) override;
+        virtual bool detachGRPS() override;
+        virtual bool isGPRSConnected() override;
 
-        bool enableDatetimeNetworkSync();
-        bool disableDatetimeNetworkSync();
+        bool enableDatetimeNetworkSync() override;
+        bool disableDatetimeNetworkSync() override;
 
         CellModemClient * getCellModemClient(uint8_t id);
         
     private:
         bool _setCTZU(uint8_t mode);
         int8_t _getCTZU();
-        bool _initializationProcess();   
+        bool _initializationProcess() override;   
 
         CellModemClient * _clients[MAX_CLIENTS_NUMBER];
     

@@ -6,15 +6,15 @@
 
 class SimcomModemFtp : public CellModemFtp, public CellModemUrcHandler {
     public:
-        SimcomModemFtp(SimcomModem &modem);
+        explicit SimcomModemFtp(SimcomModem &modem);
 
-        virtual bool init(const char * server, const char * username, const char * password);
-        virtual bool send(const char * path, const char * filename, const uint8_t * buffer, size_t size);
-        virtual bool send(const char * path, const char * filename, Stream &stream, size_t size);
+        virtual bool init(const char * server, const char * username, const char * password) override;
+        virtual bool send(const char * path, const char * filename, const uint8_t * buffer, size_t size) override;
+        virtual bool send(const char * path, const char * filename, Stream &stream, size_t size) override;
 
         virtual uint8_t getLastTransactionError() const;
 
-        virtual ATResponse handleUrcs();
+        virtual ATResponse handleUrcs() override;
     
     private:
         bool _initFtpTransaction(const char * path, const char * filename);

@@ -9,26 +9,26 @@
 class UbloxModemHttp : public CellModemHttp, public CellModemUrcHandler {
     public:
 
-        UbloxModemHttp(UbloxModem &modem);
-        UbloxModemHttp(UbloxModem &modem, UbloxModemFilesystem &filesystem);
+        explicit UbloxModemHttp(UbloxModem &modem);
+        explicit UbloxModemHttp(UbloxModem &modem, UbloxModemFilesystem &filesystem);
 
-        virtual bool init(const char * server, const uint16_t port = 80);
-        virtual bool initSSL(const char * server, const uint16_t port = 443);
+        virtual bool init(const char * server, const uint16_t port = 80) override;
+        virtual bool initSSL(const char * server, const uint16_t port = 443) override;
 
-        virtual bool get(const char * path, uint8_t * receiveBuffer, const size_t receiveLen, CellModemHttpHeader_t * header);
+        virtual bool get(const char * path, uint8_t * receiveBuffer, const size_t receiveLen, CellModemHttpHeader_t * header) override;
         
         virtual bool post(const char * path, const char * contentType, const uint8_t * sendBuffer, size_t sendLen, 
-                        uint8_t * receiveBuffer = nullptr, const size_t receiveLen = 0, CellModemHttpHeader_t * header = nullptr);
+                        uint8_t * receiveBuffer = nullptr, const size_t receiveLen = 0, CellModemHttpHeader_t * header = nullptr) override;
         
         virtual bool post(const char * path, const char * contentType, Stream * stream, const size_t size,
-                        uint8_t * receiveBuffer = nullptr, const size_t receiveLen = 0, CellModemHttpHeader_t * header = nullptr);
+                        uint8_t * receiveBuffer = nullptr, const size_t receiveLen = 0, CellModemHttpHeader_t * header = nullptr) override;
 
         virtual bool isResponseAvailable() const; 
         virtual bool getHttpResult() const;
         virtual bool readResponse(CellModemHttpHeader_t * header, char * bodyBuffer, size_t size);
-        virtual CellModemHttpError_t readLastError();
+        virtual CellModemHttpError_t readLastError() override;
 
-        virtual ATResponse handleUrcs();
+        virtual ATResponse handleUrcs() override;
 
     private:
         typedef struct UbloxHttpResponseParser {

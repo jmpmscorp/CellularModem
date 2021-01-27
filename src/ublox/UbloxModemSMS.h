@@ -13,7 +13,7 @@ class UbloxModemSMS : public CellModemSMS {
     public:
         UbloxModemSMS(UbloxModem & modem);
 
-        ATResponse handleUrcs();   
+        ATResponse handleUrcs() override;   
         
 };
 

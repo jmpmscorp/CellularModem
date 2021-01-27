@@ -4,7 +4,7 @@
 
 class CellModemFtp {
     public:
-        CellModemFtp(CellModem &modem);
+        explicit CellModemFtp(CellModem &modem);
         ~CellModemFtp();
 
         virtual bool init(const char * server, const char * username, const char * password) = 0;

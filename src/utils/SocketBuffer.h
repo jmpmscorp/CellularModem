@@ -4,7 +4,7 @@
 
 class SocketBuffer {
     public:
-        SocketBuffer(const size_t size);
+        explicit SocketBuffer(const size_t size);
 
         void init();
         size_t count() const;

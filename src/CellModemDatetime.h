@@ -8,7 +8,7 @@
 
 class CellModemDatetime {
     public:
-        CellModemDatetime(const char * cclkStr);
+        explicit CellModemDatetime(const char * cclkStr);
 
         uint16_t year() { return _yOff + 2000; }
         uint8_t month() { return _m + 1; }

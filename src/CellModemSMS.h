@@ -10,7 +10,7 @@ typedef void ( * CMTCallback ) ( char * phoneNumber, char * text);
 
 class CellModemSMS : public CellModemUrcHandler  {
     public:
-        CellModemSMS(CellModem &modem);
+        explicit CellModemSMS(CellModem &modem);
 
         virtual bool send(char * phoneNumber, const char * text);
         virtual bool read(uint16_t index, char * phoneNumber, size_t phoneNumberSize, char * textBuffer, size_t textBufferSize);

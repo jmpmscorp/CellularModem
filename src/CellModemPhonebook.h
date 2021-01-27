@@ -7,7 +7,7 @@
 
 class CellModemPhonebook {
     public:
-        CellModemPhonebook(CellModem &modem);
+        explicit CellModemPhonebook(CellModem &modem);
 
         bool addContact(const char * phoneNumber, const char * contactName = nullptr, uint8_t index = 0);
         bool readContact(uint8_t index, char * numberBuffer, char * contactNameBuffer);

@@ -9,8 +9,8 @@ class UbloxModemClient : public CellModemClient, public CellModemUrcHandler {
         UbloxModemClient(UbloxModem& modem, bool ssl = false);
         ~UbloxModemClient();
 
-        virtual bool setTCPMode(uint8_t mode);
-        ATResponse handleUrcs();
+        virtual bool setTCPMode(uint8_t mode) override;
+        ATResponse handleUrcs() override;
 
     protected:
         virtual int socketConnect(const char * host, uint16_t port, uint8_t * socketId, bool ssl = false, unsigned int timeout = 30000);

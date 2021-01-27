@@ -4,7 +4,7 @@
 
 class UbloxModemFilesystem {
     public:
-        UbloxModemFilesystem(UbloxModem &modem);
+        explicit UbloxModemFilesystem(UbloxModem &modem);
 
         uint32_t getMaxFileSize();
         bool writeFile(const char * filename, const uint8_t * buffer, const size_t size);

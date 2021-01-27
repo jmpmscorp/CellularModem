@@ -21,7 +21,7 @@ typedef struct CellModemHttpError_t {
 
 class CellModemHttp {
     public:
-        CellModemHttp(CellModem &modem);
+        explicit CellModemHttp(CellModem &modem);
         ~CellModemHttp();
 
         virtual bool init(const char * server, const uint16_t port = 80) = 0;

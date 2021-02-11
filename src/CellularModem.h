@@ -12,7 +12,7 @@
 #ifndef CELLMODEM_MODEL
     #error "You should define a model to use"
 #else
-    #pragma message ("Cellular Modem Library Version 1.2.6")
+    #pragma message ("Cellular Modem Library Version 1.2.7")
     #if CELLMODEM_MODEL == UBLOX
         #pragma message ("MODEL UBLOX")
         #include "ublox/UbloxModem.h"

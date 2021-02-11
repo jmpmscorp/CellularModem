@@ -14,6 +14,8 @@ class UbloxModem : public CellModem {
         ~UbloxModem();
 
         virtual bool softwareOff() override;
+        virtual bool reset() override;
+        virtual bool forceReset() override;
 
         virtual bool setLowPowerMode(uint8_t mode) override;
         virtual bool enableLowPowerMode() override;

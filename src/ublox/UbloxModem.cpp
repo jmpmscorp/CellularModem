@@ -22,6 +22,41 @@ bool UbloxModem::softwareOff() {
     return false;
 }
 
+bool CellModem::forceReset() {
+    if(_resetPin > -1) {
+        digitalWrite(_resetPin, LOW);
+        _modemDelay(2000);
+        digitalWrite(_resetPin, HIGH);
+        _modemDelay(5000);
+        digitalWrite(_resetPin, LOW);
+    }
+    else if(_onOffPin > -1) {
+        digitalWrite(_onOffPin, LOW);
+        _modemDelay(5000);
+        digitalWrite(_onOffPin, HIGH);
+    }
+
+    bool timeout = true;
+    for (uint8_t i = 0; i < 10; i++) {
+        if (isAlive(500)) {
+            timeout = false;
+            break;
+        }
+    }
+
+    if (timeout) {
+        return false;
+    }    
+
+    return true;
+}
+
+bool CellModem::reset() {
+    sendATCommand(F("AT+CFUN=16"));
+
+    return readResponse() == ATResponse::ResponseOK;
+}
+
 bool UbloxModem::_initializationProcess() {
     sendATCommand(F("AT+CMEE=2"));
 

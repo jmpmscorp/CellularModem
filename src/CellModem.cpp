@@ -79,12 +79,12 @@ bool CellModem::off() {
 bool CellModem::forceReset() {
     if(_resetPin > -1) {
         digitalWrite(_resetPin, HIGH);
-        _modemDelay(250);
+        _modemDelay(1000);
         digitalWrite(_resetPin, LOW);
     }
     else if(_onOffPin > -1) {
         digitalWrite(_onOffPin, LOW);
-        _modemDelay(250);
+        _modemDelay(1000);
         digitalWrite(_onOffPin, HIGH);
     }
 

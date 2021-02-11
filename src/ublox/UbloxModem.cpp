@@ -22,7 +22,7 @@ bool UbloxModem::softwareOff() {
     return false;
 }
 
-bool CellModem::forceReset() {
+bool UbloxModem::forceReset() {
     if(_resetPin > -1) {
         digitalWrite(_resetPin, LOW);
         _modemDelay(2000);
@@ -51,7 +51,7 @@ bool CellModem::forceReset() {
     return true;
 }
 
-bool CellModem::reset() {
+bool UbloxModem::reset() {
     sendATCommand(F("AT+CFUN=16"));
 
     return readResponse() == ATResponse::ResponseOK;
